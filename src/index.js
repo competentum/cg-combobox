@@ -66,15 +66,14 @@ class CgCombobox extends EventEmitter {
   /**
    *
    * @param {ComboBoxComponentSettings} settings
-   * @param {ComboBoxOptions} options
    */
-  constructor(settings, options) {
+  constructor(settings) {
     super();
 
     //todo: initialization
-    this.options = options;
     this.settings = settings;
     this._addEmitters();
+    this._addListeners();
     this._render();
   }
 
@@ -84,10 +83,10 @@ class CgCombobox extends EventEmitter {
   _render() {
     //todo: draw here
     var elementHTML = `
-      <div class="cg-combobox-root">
-        <input type="text" class="cg-combobox-text-input">
-        <div class="cg-combobox-button">
-          <div class="cg-combobox-arrow"></div>
+      <div class=${ROOT_CLASS}>
+        <input type="text" class=${INPUT_CLASS}>
+        <div class=${BUTTON_CLASS}>
+          <div class=${ARROW_CLASS}></div>
         </div>
       </div>
     `;
@@ -98,6 +97,25 @@ class CgCombobox extends EventEmitter {
     this.settings.container.appendChild(this._rootElement);
   }
 
+
+  _renderOptionsList() {
+    let optionsArray = [];
+
+    let optionsListHTML = `
+      <ul role="listbox" id="owned_listbox">
+      </ul>
+    `;
+
+    let optionsListItemHTML = `
+      <li role="option"></li>
+    `;
+
+    this.settings.options.forEach((option, index) => {
+      optionsArray.push(this.settings.options[index]);
+    });
+
+  }
+
   _addEmitters(){
     this.on(this.constructor.EVENTS.EXPAND, () => {
       this.options.onExpand();
@@ -105,17 +123,27 @@ class CgCombobox extends EventEmitter {
     this.on(this.constructor.EVENTS.COLLAPSE, () => {
       this.options.onCollapse();
     });
-    this.on(this.constructor.EVENTS.CHECK, (index) => {
+    /*this.on(this.constructor.EVENTS.CHECK, (index) => {
       this.options.onCheck(index);
-    });
+    });*/
     this.on(this.constructor.EVENTS.CHANGE, (value, index) => {
       this.options.onChange(value, index);
     });
   }
 
-  _renderOptionsList() {
-    //var
+  _addListeners(){
+    document.addEventListener('click', this._onOutSideClick.bind(this));
+    this.settings.container.addEventListener('click', this._onComboboxClickHandler.bind(this));
+    /*this.container.addEventListener('keydown', this._onComboboxKeyDownHandler.bind(this));
+    this.listbox.addEventListener('click', this._onOptionClickHandler.bind(this));
+    this.listbox.addEventListener('keydown', this._onOptionKeyDownHandler.bind(this));*/
   }
+
+  _onOutSideClick (event) {
+  };
+
+  _onComboboxClickHandler (event) {
+  };
 
 }
 
