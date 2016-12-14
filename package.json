@@ -1,0 +1,48 @@
+{
+  "name": "cg-combobox",
+  "version": "0.0.1",
+  "description": "Combobox Project for Competentum Group Components",
+  "main": "build/cg-template-component.min.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/competentum/cg-template-component.git"
+  },
+  "author": "Alexey Pilyugin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/competentum/cg-template-component/issues"
+  },
+  "homepage": "https://github.com/competentum/cg-template-component#readme",
+  "devDependencies": {
+    "babel-core": "^6.18.0",
+    "babel-jest": "^17.0.2",
+    "babel-loader": "^6.2.7",
+    "babel-preset-es2015": "^6.18.0",
+    "cg-components-banner": "latest",
+    "css-loader": "^0.23.1",
+    "eslint": "^3.11.1",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^3.0.1",
+    "gulp-jest": "^0.6.0",
+    "gulp-util": "^3.0.7",
+    "gulp-webpack": "^1.5.0",
+    "jest-cli": "^17.0.3",
+    "less": "^2.6.1",
+    "less-loader": "^2.2.2",
+    "path": "^0.12.7",
+    "postcss-loader": "^1.1.1",
+    "pre-commit": "^1.1.3",
+    "style-loader": "^0.13.0",
+    "uppercamelcase": "^1.1.0",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.12.14",
+    "webpack-dev-server": "^1.14.1"
+  },
+  "dependencies": {
+    "cg-component-utils": "^1.0.0",
+    "events": "^1.1.0"
+  }
+}
