@@ -1,5 +1,13 @@
 @main-color: #17AC5B;
 @prefix: cg-combobox;
+@valueWidth: 75%;
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 100px;
+}
 
 .@{prefix}-root {
   width: 100%;
@@ -8,16 +16,47 @@
 
 .@{prefix}-text-input {
   display: inline-block;
-  width: 80%;
+  width: @valueWidth;
   height: 100%;
   border: none;
+  outline: none;
   margin: 0px;
   padding: 0px;
 }
 
 .@{prefix}-button {
+  position: relative;
   background-color: darkgreen;
   display: inline-block;
+  border: darkgreen solid 1px;
   height: 100%;
   width: 10%;
+  margin-left: -5px;
+  margin-bottom: -6px;
+}
+
+.@{prefix}-button:hover {
+  background-color: green;
+  cursor: pointer;
+}
+
+.@{prefix}-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: @valueWidth;
+}
+
+.@{prefix}-list-item {
+  display: block;
+  text-align: left;
+  border: grey solid 1px;
+  margin: 0;
+  padding: 0;
+  width: @valueWidth;
+}
+
+.@{prefix}-list-item:hover {
+  cursor: pointer;
+  background-color: #33acfe;
 }

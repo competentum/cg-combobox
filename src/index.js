@@ -4,6 +4,7 @@ import './common.less';
 
 import EventEmitter from 'events';
 import utils from 'cg-component-utils';
+//import Keycode from 'keycode';
 
 
 const PREFIX = 'cg-combobox';
@@ -72,9 +73,10 @@ class CgCombobox extends EventEmitter {
 
     //todo: initialization
     this.settings = settings;
+    this._expanded = false;
     this._addEmitters();
-    this._addListeners();
     this._render();
+    this._addListeners();
   }
 
   /**
@@ -84,66 +86,147 @@ class CgCombobox extends EventEmitter {
     //todo: draw here
     var elementHTML = `
       <div class=${ROOT_CLASS}>
-        <input type="text" class=${INPUT_CLASS}>
+        <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
+  aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option">
         <div class=${BUTTON_CLASS}>
           <div class=${ARROW_CLASS}></div>
         </div>
       </div>
     `;
 
-
     this._rootElement = utils.createHTML(elementHTML);
-    //document.body.appendChild(this._rootElement);
+    this._button = this._rootElement.querySelector('.'+ROOT_CLASS+' .' + BUTTON_CLASS);
+    this._input = this._rootElement.querySelector('.'+ROOT_CLASS+' .' + INPUT_CLASS);
+
     this.settings.container.appendChild(this._rootElement);
   }
 
-
+  /**
+   * @private
+   */
   _renderOptionsList() {
     let optionsArray = [];
 
     let optionsListHTML = `
-      <ul role="listbox" id="owned_listbox">
+      <ul role="listbox" id="owned_listbox" class=${LIST_CLASS}>
       </ul>
     `;
 
     let optionsListItemHTML = `
-      <li role="option"></li>
+      <li role="option" class=${LISTITEM_CLASS}></li>
     `;
+
+    this._optionsList = utils.createHTML(optionsListHTML);
 
     this.settings.options.forEach((option, index) => {
       optionsArray.push(this.settings.options[index]);
+      let newListItem = utils.createHTML(optionsListItemHTML);
+      newListItem.textContent = this.settings.options[index];
+      this._optionsList.appendChild(newListItem);
     });
 
+
+
+    this._rootElement.appendChild(this._optionsList);
   }
 
+  /**
+   * @private
+   */
   _addEmitters(){
     this.on(this.constructor.EVENTS.EXPAND, () => {
-      this.options.onExpand();
+      //this.options.onExpand();
     });
     this.on(this.constructor.EVENTS.COLLAPSE, () => {
-      this.options.onCollapse();
+      //this.options.onCollapse();
     });
     /*this.on(this.constructor.EVENTS.CHECK, (index) => {
       this.options.onCheck(index);
     });*/
     this.on(this.constructor.EVENTS.CHANGE, (value, index) => {
-      this.options.onChange(value, index);
+      //this.options.onChange(value, index);
     });
   }
 
+  /**
+   * @private
+   */
   _addListeners(){
     document.addEventListener('click', this._onOutSideClick.bind(this));
-    this.settings.container.addEventListener('click', this._onComboboxClickHandler.bind(this));
-    /*this.container.addEventListener('keydown', this._onComboboxKeyDownHandler.bind(this));
-    this.listbox.addEventListener('click', this._onOptionClickHandler.bind(this));
-    this.listbox.addEventListener('keydown', this._onOptionKeyDownHandler.bind(this));*/
+    this.settings.container.addEventListener('click', this._onComboBoxClickHandler.bind(this));
+    this._button.addEventListener('click', this._onComboBoxButtonClickHandler.bind(this));
   }
 
+  /**
+   * @private
+   */
   _onOutSideClick (event) {
+    if (event.target !== this._button) {
+      this._collapse();
+      this._expanded = false;
+    }
   };
 
-  _onComboboxClickHandler (event) {
+  /**
+   * @private
+   */
+  _onComboBoxClickHandler (event) {
+
   };
+
+  /**
+   * @private
+   */
+  _onComboBoxButtonClickHandler (event) {
+    if (this._expanded) {
+      this._collapse();
+    }
+    else {
+      this._expand();
+    }
+    this._expanded = !this._expanded;
+  };
+
+  /**
+   * @private
+   */
+  _onOptionsListClickHandler (event) {
+    this._currentValue = event.target.textContent;
+    this._input.value = this._currentValue;
+
+  }
+
+  /**
+   * @private
+   */
+  _expand () {
+    this._renderOptionsList();
+    this._optionsList.addEventListener('click', this._onOptionsListClickHandler.bind(this));
+  };
+
+  /**
+   * @private
+   */
+  _collapse () {
+    if (this._expanded) {
+      this._optionsList.setAttribute('style', 'display: none;');
+    }
+  };
+
+
+  /**
+   * @returns {string} currentValue
+   **/
+  getValue () {
+    return this._currentValue;
+  }
+
+  /**
+   * @param {string} newValue
+   **/
+  addValue (newValue) {
+    this.settings.options.push(newValue);
+  }
 
 }
 
