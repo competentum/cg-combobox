@@ -4,7 +4,7 @@ import './common.less';
 
 import EventEmitter from 'events';
 import utils from 'cg-component-utils';
-//import Keycode from 'keycode';
+import Keycode from './keycode';
 
 
 const PREFIX = 'cg-combobox';
@@ -18,7 +18,8 @@ const LISTITEM_CLASS = `${PREFIX}-list-item`;
 const FOCUSED_CLASS = `${PREFIX}-focused`;
 const ENABLED_CLASS = `${PREFIX}-enabled`;
 const DISABLED_CLASS = `${PREFIX}-disabled`;
-
+const ARROW_UP_CLASS = `${PREFIX}-arrow-up`;
+const ARROW_DOWN_CLASS = `${PREFIX}-arrow-down`;
 
 // todo: describe settings properties here
 /**
@@ -44,10 +45,15 @@ class CgCombobox extends EventEmitter {
         disabled: [],
         direction: 'bottom',
         prompt: null,
-        onExpand: function(){},
-        onCollapse: function(){},
-        onCheck: function(){},
-        onChange: function(){}
+        filtering: false,
+        onExpand: function () {
+        },
+        onCollapse: function () {
+        },
+        onCheck: function () {
+        },
+        onChange: function () {
+        }
       };
     }
     return this._DEFAULT_SETTINGS;
@@ -65,8 +71,8 @@ class CgCombobox extends EventEmitter {
   }
 
   /**
-   *
-   * @param {ComboBoxComponentSettings} settings
+   * @constructor
+   * @param {object} settings
    */
   constructor(settings) {
     super();
@@ -87,16 +93,17 @@ class CgCombobox extends EventEmitter {
     var elementHTML = `
       <div class=${ROOT_CLASS}>
         <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
-  aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option">
+  aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1">
         <div class=${BUTTON_CLASS}>
-          <div class=${ARROW_CLASS}></div>
+          <div class="cg-combobox-arrow cg-combobox-arrow-down"></div>
         </div>
       </div>
     `;
 
     this._rootElement = utils.createHTML(elementHTML);
-    this._button = this._rootElement.querySelector('.'+ROOT_CLASS+' .' + BUTTON_CLASS);
-    this._input = this._rootElement.querySelector('.'+ROOT_CLASS+' .' + INPUT_CLASS);
+    this._button = this._rootElement.querySelector('.' + ROOT_CLASS + ' .' + BUTTON_CLASS);
+    this._input = this._rootElement.querySelector('.' + ROOT_CLASS + ' .' + INPUT_CLASS);
+    this._arrow = this._rootElement.querySelector('.' + ROOT_CLASS + ' .' + ARROW_CLASS);
 
     this.settings.container.appendChild(this._rootElement);
   }
@@ -104,36 +111,58 @@ class CgCombobox extends EventEmitter {
   /**
    * @private
    */
-  _renderOptionsList() {
-    let optionsArray = [];
+  _clearOptionsList() {
+    let list = this._rootElement.querySelector('.' + LIST_CLASS);
+    if (list) {
+      list.innerHTML = '';
+    }
+  }
 
+  /**
+   * @private
+   */
+  _renderOptionsList() {
+    let actualOptionsArray = [];
     let optionsListHTML = `
       <ul role="listbox" id="owned_listbox" class=${LIST_CLASS}>
       </ul>
     `;
 
     let optionsListItemHTML = `
-      <li role="option" class=${LISTITEM_CLASS}></li>
+      <li role="option" class=${LISTITEM_CLASS} tabindex="-1"></li>
     `;
 
     this._optionsList = utils.createHTML(optionsListHTML);
+    this._optionsList.setAttribute('style', 'height: ' + (this.settings.maxHeight || '100px;'));
 
     this.settings.options.forEach((option, index) => {
-      optionsArray.push(this.settings.options[index]);
-      let newListItem = utils.createHTML(optionsListItemHTML);
-      newListItem.textContent = this.settings.options[index];
-      this._optionsList.appendChild(newListItem);
+      if (this.settings.filtering) {
+        actualOptionsArray.push(option);
+        if (actualOptionsArray[index].indexOf(this._input.value) !== -1) {
+          let newListItem = utils.createHTML(optionsListItemHTML);
+          newListItem.textContent = option;
+          this._optionsList.appendChild(newListItem);
+          newListItem.addEventListener('focus', this._onComboBoxListItemFocusHandler.bind(this));
+        }
+      }
+      else {
+        let newListItem = utils.createHTML(optionsListItemHTML);
+        newListItem.textContent = option;
+        this._optionsList.appendChild(newListItem);
+      }
     });
 
-
-
+    let prevOptionsList = this._rootElement.querySelector('.' + LIST_CLASS);
+    if (prevOptionsList) {
+      this._rootElement.removeChild(prevOptionsList);
+    }
     this._rootElement.appendChild(this._optionsList);
   }
 
   /**
    * @private
    */
-  _addEmitters(){
+  _addEmitters() {
     this.on(this.constructor.EVENTS.EXPAND, () => {
       //this.options.onExpand();
     });
@@ -141,8 +170,8 @@ class CgCombobox extends EventEmitter {
       //this.options.onCollapse();
     });
     /*this.on(this.constructor.EVENTS.CHECK, (index) => {
-      this.options.onCheck(index);
-    });*/
+     this.options.onCheck(index);
+     });*/
     this.on(this.constructor.EVENTS.CHANGE, (value, index) => {
       //this.options.onChange(value, index);
     });
@@ -151,81 +180,121 @@ class CgCombobox extends EventEmitter {
   /**
    * @private
    */
-  _addListeners(){
+  _addListeners() {
     document.addEventListener('click', this._onOutSideClick.bind(this));
     this.settings.container.addEventListener('click', this._onComboBoxClickHandler.bind(this));
     this._button.addEventListener('click', this._onComboBoxButtonClickHandler.bind(this));
+    this._input.addEventListener('input', this._onComboBoxInputChangeHandler.bind(this));
+    this._input.addEventListener('click', this._onComboBoxInputClickHandler.bind(this));
+    this._input.addEventListener('keydown', this._onComboBoxKeyDownHandler.bind(this));
   }
 
   /**
    * @private
    */
-  _onOutSideClick (event) {
-    if (event.target !== this._button) {
+  _onOutSideClick(event) {
+    if ((event.target !== this._button) && (event.target !== this._input) && (event.target !== this._arrow)) {
       this._collapse();
-      this._expanded = false;
     }
   };
 
   /**
    * @private
    */
-  _onComboBoxClickHandler (event) {
+  _onComboBoxClickHandler(event) {
 
   };
 
   /**
    * @private
    */
-  _onComboBoxButtonClickHandler (event) {
+  _onComboBoxButtonClickHandler() {
     if (this._expanded) {
       this._collapse();
     }
     else {
       this._expand();
     }
-    this._expanded = !this._expanded;
   };
 
   /**
    * @private
    */
-  _onOptionsListClickHandler (event) {
+  _onOptionsListClickHandler(event) {
     this._currentValue = event.target.textContent;
     this._input.value = this._currentValue;
+    this._collapse();
+  }
+
+  /**
+   * @private
+   */
+  _onComboBoxInputChangeHandler() {
+    if (this.settings.filtering) {
+      this._clearOptionsList();
+      this._renderOptionsList();
+    }
+  }
+
+  _onComboBoxInputClickHandler() {
+    this._expand();
+  }
+
+
+  /**
+   * @private
+   */
+  _onComboBoxKeyDownHandler(event) {
+    if (event.keyCode === Keycode.DOWN) {
+      this._expand();
+      this._optionsList.childNodes[1].focus();
+    }
+  }
+
+  /**
+   * @private
+   */
+  _onComboBoxListItemFocusHandler() {
 
   }
 
   /**
    * @private
    */
-  _expand () {
-    this._renderOptionsList();
-    this._optionsList.addEventListener('click', this._onOptionsListClickHandler.bind(this));
+  _expand() {
+    if (this._expanded === false) {
+      this._renderOptionsList();
+      this._optionsList.addEventListener('click', this._onOptionsListClickHandler.bind(this));
+      this._expanded = !this._expanded;
+      this._arrow.setAttribute('class', 'cg-combobox-arrow cg-combobox-arrow-up');
+    }
   };
 
   /**
    * @private
    */
-  _collapse () {
+  _collapse() {
     if (this._expanded) {
       this._optionsList.setAttribute('style', 'display: none;');
+      this._expanded = !this._expanded;
+      this._arrow.setAttribute('class', 'cg-combobox-arrow cg-combobox-arrow-down');
     }
   };
-
 
   /**
    * @returns {string} currentValue
    **/
-  getValue () {
+  getValue() {
     return this._currentValue;
   }
 
   /**
-   * @param {string} newValue
+   * @param {Array} newValues
    **/
-  addValue (newValue) {
-    this.settings.options.push(newValue);
+  addValues(newValues) {
+    newValues.forEach((value) => {
+      this.settings.options.push(value);
+    });
   }
 
 }

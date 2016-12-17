@@ -1,7 +1,7 @@
 /**
  * Created by Praskura on 15.12.2016.
  */
-export default Keycode = {
+export default {
   BACKSPACE: 8,
   TAB: 9,
   ENTER: 13,

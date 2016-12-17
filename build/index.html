@@ -7,7 +7,7 @@
     <style type="text/css">
         #combobox {
             width: 300px;
-            height: 20px;
+            height: 40px;
         }
     </style>
 </head>
@@ -17,9 +17,13 @@
     var combo = new CgCombobox(
         {
             container: document.getElementById('combobox'),
-            options: ['option1', 'option2', 'option3']
+            options: ['option1', 'option2', 'option3'],
+            filtering: true
+            //maxHeight: '200px'
         }
     );
+
+    //combo.addValues(['Monitor', 'Mouse', 'System block', 'Mug', 'Keyboard']);
 </script>
 </body>
 </html>
