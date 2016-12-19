@@ -111,4 +111,4 @@ export default {
   BACKSLASH: 220,
   CLOSEBRAKET: 221,
   SINGLEQUOTE: 222
-}
+};

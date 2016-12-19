@@ -2,20 +2,20 @@
   "name": "cg-combobox",
   "version": "0.0.1",
   "description": "Combobox Project for Competentum Group Components",
-  "main": "build/cg-template-component.min.js",
+  "main": "build/cg-combobox.min.js",
   "scripts": {
     "test": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/competentum/cg-template-component.git"
+    "url": "git+https://github.com/competentum/cg-combobox.git"
   },
-  "author": "Alexey Pilyugin",
+  "author": "Grigory Praskura",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/competentum/cg-template-component/issues"
+    "url": "https://github.com/competentum/cg-combobox/issues"
   },
-  "homepage": "https://github.com/competentum/cg-template-component#readme",
+  "homepage": "https://github.com/competentum/cg-combobox#readme",
   "devDependencies": {
     "babel-core": "^6.18.0",
     "babel-jest": "^17.0.2",
