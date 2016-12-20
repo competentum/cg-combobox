@@ -42,11 +42,11 @@ class CgCombobox extends EventEmitter {
         title: 'Combobox',
         options: [],
         selected: 0,
-        disabled: [],
+        disabled: [], //todo: move to options properties
         direction: 'bottom',
         prompt: null,
         filtering: false,
-        height: '100px',
+        height: '100px', //todo: зачем тут height?
         onExpand: function () {
         },
         onCollapse: function () {
@@ -71,6 +71,8 @@ class CgCombobox extends EventEmitter {
     return this._EVENTS;
   }
 
+  //todo: rename to value?
+  //todo: setter
   get currentValue(){
     return this._input.value;
   }
@@ -82,8 +84,10 @@ class CgCombobox extends EventEmitter {
   constructor(settings) {
     super();
 
+    //todo: merge settings with defaults
     this.settings = settings;
     this._expanded = false;
+    //todo: rename method
     this._addEmitters();
     this._render();
     this._addListeners();
@@ -93,6 +97,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _render() {
+    //todo: button tag for button
     var elementHTML = `
       <div class=${ROOT_CLASS}>
         <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
@@ -107,8 +112,10 @@ class CgCombobox extends EventEmitter {
     this._button = this._rootElement.querySelector(`.${BUTTON_CLASS}`);
     this._input = this._rootElement.querySelector(`.${INPUT_CLASS}`);
     this._arrow = this._rootElement.querySelector(`.${ARROW_CLASS}`);
+    //todo: classList (IE10+), use utils.addClass
     this._arrow.classList.add(ARROW_DOWN_CLASS);
 
+    //todo: what if container is undefined?
     this.settings.container.appendChild(this._rootElement);
 
     this._renderOptionsList();
@@ -119,6 +126,7 @@ class CgCombobox extends EventEmitter {
    */
   _clearOptionsList() {
     let list = this._rootElement.querySelector(`.${LIST_CLASS}`);
+
     if (list) {
       list.innerHTML = '';
     }
@@ -128,13 +136,16 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _renderOptionsList() {
+    //todo: why html string is multiline here
     let optionsListHTML = `
       <ul role="listbox" id="owned_listbox" class=${LIST_CLASS}>
       </ul>
     `;
     this._optionsList = utils.createHTML(optionsListHTML);
+    //todo: remove?
     this._optionsList.setAttribute('style', 'height: ' + (this.settings.maxHeight || this.constructor.DEFAULT_SETTINGS.height));
     this._updateOptionsList();
+    //todo: call collapse method
     this._optionsList.style.display = 'none';
   }
 
@@ -143,10 +154,13 @@ class CgCombobox extends EventEmitter {
    */
   _updateOptionsList() {
     let actualOptionsArray = [];
+    //todo: why html string is multiline here
     let optionsListItemHTML = `
       <li role="option" class=${LISTITEM_CLASS} tabindex="-1"></li>
     `;
     let newListItem;
+
+    //todo: option can be html/html-element/image, description should be added
     this.settings.options.forEach((option, index) => {
       if (this.settings.filtering) {
         actualOptionsArray.push(option);
@@ -191,6 +205,7 @@ class CgCombobox extends EventEmitter {
   _addListeners() {
     document.addEventListener('click', this._onOutSideClick.bind(this));
     //this.settings.container.addEventListener('click', this._onComboBoxClickHandler.bind(this));
+    //todo: long method names
     this._button.addEventListener('click', this._onComboBoxButtonClickHandler.bind(this));
     this._input.addEventListener('input', this._onComboBoxInputChangeHandler.bind(this));
     this._input.addEventListener('click', this._onComboBoxInputClickHandler.bind(this));
@@ -286,6 +301,7 @@ class CgCombobox extends EventEmitter {
     event.target.setAttribute('style', 'background-color: none;');
   }
 
+  //todo: make public
   /**
    * @private
    */
