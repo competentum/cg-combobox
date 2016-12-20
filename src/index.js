@@ -8,14 +8,11 @@ import Keycode from './keycode';
 
 const PREFIX = 'cg-combobox';
 const ROOT_CLASS = `${PREFIX}-root`;
-//const CONTAINER_CLASS = `${PREFIX}-container`;
 const INPUT_CLASS = `${PREFIX}-input`;
 const BUTTON_CLASS = `${PREFIX}-button`;
 const ARROW_CLASS = `${PREFIX}-arrow`;
 const LIST_CLASS = `${PREFIX}-list`;
 const LISTITEM_CLASS = `${PREFIX}-list-item`;
-//const FOCUSED_CLASS = `${PREFIX}-focused`;
-//const ENABLED_CLASS = `${PREFIX}-enabled`;
 const INPUT_DISABLED_CLASS = `${PREFIX}-input-disabled`;
 const ARROW_UP_CLASS = `${PREFIX}-arrow-up`;
 const ARROW_DOWN_CLASS = `${PREFIX}-arrow-down`;
@@ -54,7 +51,6 @@ class CgCombobox extends EventEmitter {
         onCheck: function () {
         },
         onChange: function () {
-          console.log('it works!');
         }
       };
     }
