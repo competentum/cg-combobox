@@ -1,7 +1,7 @@
 {
   "name": "cg-combobox",
   "version": "0.0.1",
-  "description": "Combobox Project for Competentum Group Components",
+  "description": "Accessibale Combobox Component",
   "main": "build/cg-combobox.min.js",
   "scripts": {
     "test": "jest"
@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "cg-component-utils": "^1.0.0",
-    "events": "^1.1.0"
+    "events": "^1.1.0",
+    "merge": "^1.2.0"
   }
 }

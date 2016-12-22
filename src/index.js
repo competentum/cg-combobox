@@ -4,7 +4,8 @@ import './common.less';
 
 import EventEmitter from 'events';
 import utils from 'cg-component-utils';
-import Keycode from './keycode';
+import merge from 'merge';
+import keycode from './keycode';
 
 const PREFIX = 'cg-combobox';
 const ROOT_CLASS = `${PREFIX}-root`;
@@ -12,10 +13,11 @@ const INPUT_CLASS = `${PREFIX}-input`;
 const BUTTON_CLASS = `${PREFIX}-button`;
 const ARROW_CLASS = `${PREFIX}-arrow`;
 const LIST_CLASS = `${PREFIX}-list`;
-const LISTITEM_CLASS = `${PREFIX}-list-item`;
+const LIST_ITEM_CLASS = `${PREFIX}-list-item`;
 const INPUT_DISABLED_CLASS = `${PREFIX}-input-disabled`;
 const ARROW_UP_CLASS = `${PREFIX}-arrow-up`;
 const ARROW_DOWN_CLASS = `${PREFIX}-arrow-down`;
+const LIST_ITEM_DISABLED_CLASS = `${PREFIX}-list-item-disabled`;
 
 // todo: describe settings properties here
 /**
@@ -42,8 +44,8 @@ class CgCombobox extends EventEmitter {
         disabled: false,
         direction: 'bottom',
         prompt: null,
+        inputEnabled: false,
         filtering: false,
-        height: '100px',
         onExpand: function () {
         },
         onCollapse: function () {
@@ -71,8 +73,15 @@ class CgCombobox extends EventEmitter {
   /**
    * @returns {string} currentComboBoxValue
    */
-  get currentValue() {
+  get value() {
     return this._input.value;
+  }
+
+  /**
+   * @param {string} newValue
+   */
+  set value(newValue) {
+    this._input.value = newValue;
   }
 
   /**
@@ -89,19 +98,56 @@ class CgCombobox extends EventEmitter {
   constructor(settings) {
     super();
 
-    this.settings = settings;
+    //this.settings = settings;
+    this._applySettings(settings);
     this._expanded = false;
     this._currentItemsArray = [];
-    this._addEmitters();
     this._render();
     this._addListeners();
+  }
+
+
+  _applySettings(settings) {
+    //debugger;
+    const DEFAULT_SETTINGS = this.constructor.DEFAULT_SETTINGS;
+
+    this.settings = merge({}, DEFAULT_SETTINGS, settings);
+    //this.constructor._fixSettings(settings);
+
+    /** @type SliderSettings */
+    //this.settings = {};
+
+    //
+    if (settings.container instanceof Element) {
+      this.container = settings.container;
+    }
+    else if (typeof settings.container === 'string') {
+      this.container = document.getElementById(settings.container);
+      if (!this.container) {
+        throw new Error(`${this.constructor.name} initialization error: can not find element with id "${settings.container}".`);
+      }
+    }
+    else if (typeof settings.container === 'undefined') {
+      this.container = document.createElement('div');
+    }
+    else {
+      throw new Error(`${this.constructor.name} initialization error: type of "settings.container" property is unsupported.`);
+    }
+    delete settings.container;
+
+    // call setters for settings which defined in DEFAULT_SETTINGS only
+    for (let key in DEFAULT_SETTINGS) {
+      if (DEFAULT_SETTINGS.hasOwnProperty(key)) {
+        this[key] = settings[key];
+      }
+    }
   }
 
   /**
    * @private
    */
   _render() {
-    var elementHTML = `
+    let elementHTML = `
       <div class=${ROOT_CLASS}>
         <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
   aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"
@@ -117,6 +163,9 @@ class CgCombobox extends EventEmitter {
     this._input = this._rootElement.querySelector(`.${INPUT_CLASS}`);
     this._arrow = this._rootElement.querySelector(`.${ARROW_CLASS}`);
     this._arrow.classList.add(ARROW_DOWN_CLASS);
+    if (this.settings.inputEnabled === false) {
+      this._input.setAttribute('disabled', 'disabled');
+    }
     if (this.settings.disabled) {
       this._input.classList.add(`${INPUT_DISABLED_CLASS}`);
       this._input.setAttribute('disabled', 'disabled');
@@ -132,6 +181,7 @@ class CgCombobox extends EventEmitter {
    */
   _clearOptionsList() {
     let list = this._rootElement.querySelector(`.${LIST_CLASS}`);
+
     if (list) {
       list.innerHTML = '';
     }
@@ -145,6 +195,7 @@ class CgCombobox extends EventEmitter {
       <ul role="listbox" id="owned_listbox" class=${LIST_CLASS}>
       </ul>
     `;
+
     this._optionsList = utils.createHTML(optionsListHTML);
     this._optionsList.setAttribute('style', 'height: ' + (this.settings.maxHeight || this.constructor.DEFAULT_SETTINGS.height));
     this._updateOptionsList();
@@ -158,7 +209,7 @@ class CgCombobox extends EventEmitter {
     this.settings.options.forEach((option, index) => {
       if (this.settings.filtering) {
         this._currentItemsArray.push(option);
-        if (this._currentItemsArray[index].indexOf(this._input.value) === -1) {
+        if (this._currentItemsArray[index].value.indexOf(this._input.value) === -1) {
           return;
         }
       }
@@ -166,6 +217,7 @@ class CgCombobox extends EventEmitter {
     });
 
     let prevOptionsList = this._rootElement.querySelector(`.${LIST_CLASS}`);
+
     if (prevOptionsList) {
       this._rootElement.removeChild(prevOptionsList);
     }
@@ -174,37 +226,21 @@ class CgCombobox extends EventEmitter {
 
   /**
    * @private
-   * @param {string} newItem
+   * @param {Object} newItem
    */
   _addOptionsListItem(newItem) {
     let optionsListItemHTML = `
-      <li role="option" class=${LISTITEM_CLASS} tabindex="-1"></li>
+      <li role="option" class=${LIST_ITEM_CLASS} tabindex="-1"></li>
     `;
 
     let newOptionsListItem = utils.createHTML(optionsListItemHTML);
 
     newOptionsListItem = utils.createHTML(optionsListItemHTML);
-    newOptionsListItem.textContent = newItem;
+    newOptionsListItem.textContent = newItem.value;
+    if (newItem.disabled) {
+      newOptionsListItem.setAttribute('class', `${LIST_ITEM_DISABLED_CLASS} ${LIST_ITEM_CLASS}`);
+    }
     this._optionsList.appendChild(newOptionsListItem);
-
-  }
-
-  /**
-   * @private
-   */
-  _addEmitters() {
-    /*this.on(this.constructor.EVENTS.EXPAND, () => {
-     this.options.onExpand();
-     });
-     this.on(this.constructor.EVENTS.COLLAPSE, () => {
-     this.options.onCollapse();
-     });
-     this.on(this.constructor.EVENTS.CHECK, (index) => {
-     this.options.onCheck(index);
-     });*/
-    this.on(this.constructor.EVENTS.CHANGE, (value, index) => {
-      this.settings.onChange(value, index);
-    });
   }
 
   /**
@@ -216,6 +252,19 @@ class CgCombobox extends EventEmitter {
     this._input.addEventListener('input', this._onComboBoxInputChangeHandler.bind(this));
     this._input.addEventListener('click', this._onComboBoxInputClickHandler.bind(this));
     this._input.addEventListener('keydown', this._onComboBoxKeyDownHandler.bind(this));
+
+    /*this.on(this.constructor.EVENTS.EXPAND, () => {
+     this.options.onExpand();
+     });
+     this.on(this.constructor.EVENTS.COLLAPSE, () => {
+     this.options.onCollapse();
+     });
+     this.on(this.constructor.EVENTS.CHECK, (index) => {
+     this.options.onCheck(index);
+     });*/
+    this.on(this.constructor.EVENTS.CHANGE, (value, index) => {
+      //this.settings.onChange(value, index);
+    });
   }
 
   /**
@@ -253,6 +302,13 @@ class CgCombobox extends EventEmitter {
   /**
    * @private
    */
+  _onOptionClick(event) {
+    console.log('yeah');
+  }
+
+  /**
+   * @private
+   */
   _onComboBoxInputChangeHandler() {
     if (this.settings.disabled) {
       return;
@@ -277,16 +333,8 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _onComboBoxKeyDownHandler(event) {
-    if (event.keyCode === Keycode.DOWN) {
+    if (event.keyCode === keycode.DOWN) {
       this._expand();
-      this._currentListItemIndex = 1;
-      this._optionsList.childNodes[this._currentListItemIndex].focus();
-      this._optionsList.childNodes[this._currentListItemIndex].setAttribute('style', 'background-color: rgba(1, 0, 0, 0.1); outline: none;');
-      this._optionsList.childNodes.forEach((value) => {
-        value.addEventListener('keydown', this._onListItemKeyDownHandler.bind(this));
-        value.addEventListener('focus', this._onListItemFocusHandler.bind(this));
-        value.addEventListener('blur', this._onListItemBlurHandler.bind(this));
-      });
     }
   }
 
@@ -295,17 +343,18 @@ class CgCombobox extends EventEmitter {
    */
   _onListItemKeyDownHandler(event) {
     let keyCode = event.keyCode;
+
     switch (keyCode) {
-      case Keycode.DOWN:
+      case keycode.DOWN:
         this._moveFocusDown();
         break;
-      case Keycode.RIGHT:
+      case keycode.RIGHT:
         this._moveFocusDown();
         break;
-      case Keycode.UP:
+      case keycode.UP:
         this._moveFocusUp();
         break;
-      case Keycode.LEFT:
+      case keycode.LEFT:
         this._moveFocusUp();
         break;
     }
@@ -347,6 +396,20 @@ class CgCombobox extends EventEmitter {
       this._expanded = !this._expanded;
       this._arrow.classList.remove(`${ARROW_DOWN_CLASS}`);
       this._arrow.classList.add(`${ARROW_UP_CLASS}`);
+      this._currentListItemIndex = 1;
+      this._optionsList.childNodes[this._currentListItemIndex].focus();
+      this._optionsList.childNodes[this._currentListItemIndex].setAttribute('style', 'background-color: rgba(1, 0, 0, 0.1); outline: none;');
+      this._optionsList.childNodes.forEach((value, index) => {
+        value.addEventListener('keydown', this._onListItemKeyDownHandler.bind(this));
+        value.addEventListener('focus', this._onListItemFocusHandler.bind(this));
+        value.addEventListener('blur', this._onListItemBlurHandler.bind(this));
+        //debugger;
+        if (this._currentItemsArray[index]) {
+          if (this._currentItemsArray[index].disabled === false) {
+            value.addEventListener('click', this._onOptionClick.bind(this));
+          }
+        }
+      });
     }
   }
 

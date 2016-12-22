@@ -1,4 +1,8 @@
 @main-color: #17AC5B;
+@secondary-color: grey;
+@list-item-color: rgba(.5, .5, .5, .2);
+@list-shadow-color: rgba(0, 0, 0, .5);
+@disabled-list-item-color: rgba(1, 0, 0, .3);
 @prefix: cg-combobox;
 @valueWidth: 75%;
 @listStdHeight: 100px;
@@ -47,8 +51,8 @@ body {
   width: @valueWidth;
   height: @listStdHeight;
   overflow: auto;
-  border: grey solid 1px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, .5);
+  border: @secondary-color solid 1px;
+  box-shadow: 0 0 10px @list-shadow-color;
 }
 
 .@{prefix}-list-item {
@@ -60,9 +64,18 @@ body {
   width: 94%;
 }
 
+.@{prefix}-list-item-disabled {
+  color: @disabled-list-item-color;
+}
+
 .@{prefix}-list-item:hover {
   cursor: pointer;
-  background-color: rgba(.5, .5, .5, .2);
+  background-color: @list-item-color;
+}
+
+.@{prefix}-list-item-disabled:hover {
+  cursor: default;
+  background-color: transparent;
 }
 
 .@{prefix}-arrow {
@@ -75,12 +88,12 @@ body {
 
 .@{prefix}-arrow-up {
   border-width: 0 10px 10px 10px;
-  border-color: transparent transparent grey transparent;
+  border-color: transparent transparent @secondary-color transparent;
 }
 
 .@{prefix}-arrow-down {
   border-width: 10px 10px 0 10px;
-  border-color: grey transparent transparent transparent;
+  border-color: @secondary-color transparent transparent transparent;
 }
 
 .@{prefix}-input:disabled {
@@ -88,7 +101,7 @@ body {
 }
 
 .@{prefix}-input-disabled {
-  border-bottom: grey solid 2px;
+  border-bottom: @secondary-color solid 2px;
 }
 
 .@{prefix}-input-disabled:hover {

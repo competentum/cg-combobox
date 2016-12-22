@@ -17,14 +17,27 @@
     var combo = new CgCombobox(
         {
             container: document.getElementById('combobox'),
-            options: ['option1', 'option2', 'option3'],
+            options: [
+                {
+                    value: 'option1',
+                    description: 'option 1 description',
+                    disabled: false
+                },
+                {
+                    value: 'option2',
+                    description: 'option 2 description',
+                    disabled: false
+                },
+                {
+                    value: 'option3',
+                    description: 'option 3 description',
+                    disabled: true
+                }
+            ],
             filtering: true,
-            disabled: true
-            //maxHeight: '200px'
+            disabled: false
         }
     );
-
-    //combo.addValues(['Monitor', 'Mouse', 'System block', 'Mug', 'Keyboard']);
 </script>
 </body>
 </html>
