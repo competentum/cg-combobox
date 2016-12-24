@@ -100,7 +100,8 @@ class CgCombobox extends EventEmitter {
     super();
 
     this._applySettings(settings);
-    this._expanded = false;
+    this.expanded = false;
+    this.placeholder = '';
     this._currentItemsArray = [];
     this._render();
     this._addListeners();
@@ -214,7 +215,7 @@ class CgCombobox extends EventEmitter {
 
     let prevOptionsList = this._rootElement.querySelector(`.${LIST_CLASS}`);
 
-    if (this._expanded) {
+    if (this.expanded) {
       if (prevOptionsList) {
         this._rootElement.removeChild(prevOptionsList);
       }
@@ -244,10 +245,10 @@ class CgCombobox extends EventEmitter {
    */
   _addListeners() {
     document.addEventListener('click', this._onOutSideClick.bind(this));
-    this._button.addEventListener('click', this._onComboBoxButtonClickHandler.bind(this));
-    this._input.addEventListener('input', this._onComboBoxInputChangeHandler.bind(this));
-    this._input.addEventListener('click', this._onComboBoxInputClickHandler.bind(this));
-    this._input.addEventListener('keydown', this._onComboBoxKeyDownHandler.bind(this));
+    this._button.addEventListener('click', this._onButtonClick.bind(this));
+    this._input.addEventListener('input', this._onInputChange.bind(this));
+    this._input.addEventListener('click', this._onInputClick.bind(this));
+    this._input.addEventListener('keydown', this._onKeyDown.bind(this));
 
     /*this.on(this.constructor.EVENTS.EXPAND, () => {
      this.options.onExpand();
@@ -269,21 +270,21 @@ class CgCombobox extends EventEmitter {
   _onOutSideClick(event) {
     if ((event.target !== this._button) && (event.target !== this._input)
         && (event.target !== this._arrow)) {
-      this._collapse();
+      this.collapse();
     }
   }
 
   /**
    * @private
    */
-  _onComboBoxButtonClickHandler() {
+  _onButtonClick() {
     if (this.settings.disabled) {
       return;
     }
-    if (this._expanded) {
-      this._collapse();
+    if (this.expanded) {
+      this.collapse();
     } else {
-      this._expand();
+      this.expand();
       this._updateOptionsList();
     }
   }
@@ -291,9 +292,9 @@ class CgCombobox extends EventEmitter {
   /**
    * @private
    */
-  _onOptionsListClickHandler(event) {
+  _onListClick(event) {
     this.value = event.target.textContent;
-    this._collapse();
+    this.collapse();
   }
 
   /**
@@ -306,7 +307,7 @@ class CgCombobox extends EventEmitter {
   /**
    * @private
    */
-  _onComboBoxInputChangeHandler() {
+  _onInputChange() {
     if (this.settings.disabled) {
       return;
     }
@@ -319,26 +320,26 @@ class CgCombobox extends EventEmitter {
   /**
    * @private
    */
-  _onComboBoxInputClickHandler() {
+  _onInputClick() {
     if (this.settings.disabled) {
       return;
     }
-    this._expand();
+    this.expand();
   }
 
   /**
    * @private
    */
-  _onComboBoxKeyDownHandler(event) {
+  _onKeyDown(event) {
     if (event.keyCode === keycode.DOWN) {
-      this._expand();
+      this.expand();
     }
   }
 
   /**
    * @private
    */
-  _onListItemKeyDownHandler(event) {
+  _onListItemKeyDown(event) {
     let keyCode = event.keyCode;
 
     switch (keyCode) {
@@ -375,31 +376,31 @@ class CgCombobox extends EventEmitter {
     }
   }
 
-  _onListItemFocusHandler(event) {
+  _onListItemFocus(event) {
     event.target.setAttribute('style', 'background-color: rgba(1, 0, 0, .1); outline: none;');
   }
 
-  _onListItemBlurHandler(event) {
+  _onListItemBlur(event) {
     event.target.setAttribute('style', 'background-color: none;');
   }
 
   /**
-   * @private
+   * @public
    */
-  _expand() {
-    if (this._expanded === false) {
+  expand(emitEvent) {
+    if (this.expanded === false) {
       this._optionsList.style.display = 'block';
-      this._optionsList.addEventListener('click', this._onOptionsListClickHandler.bind(this));
-      this._expanded = !this._expanded;
+      this._optionsList.addEventListener('click', this._onListClick.bind(this));
+      this.expanded = !this.expanded;
       utils.removeClass(this._arrow, `${ARROW_DOWN_CLASS}`);
       utils.addClass(this._arrow, `${ARROW_UP_CLASS}`);
       this._currentListItemIndex = 1;
       this._optionsList.childNodes[this._currentListItemIndex].focus();
       this._optionsList.childNodes[this._currentListItemIndex].setAttribute('style', 'background-color: rgba(1, 0, 0, 0.1); outline: none;');
       this._optionsList.childNodes.forEach((value, index) => {
-        value.addEventListener('keydown', this._onListItemKeyDownHandler.bind(this));
-        value.addEventListener('focus', this._onListItemFocusHandler.bind(this));
-        value.addEventListener('blur', this._onListItemBlurHandler.bind(this));
+        value.addEventListener('keydown', this._onListItemKeyDown.bind(this));
+        value.addEventListener('focus', this._onListItemFocus.bind(this));
+        value.addEventListener('blur', this._onListItemBlur.bind(this));
         //debugger;
         if (this._currentItemsArray[index]) {
           if (this._currentItemsArray[index].disabled === false) {
@@ -407,23 +408,27 @@ class CgCombobox extends EventEmitter {
           }
         }
       });
+      if (!emitEvent) {
+        return;
+      }
+      this.emit('expand');
     }
-    this.emit('expand');
   }
 
   /**
-   * @private
+   * @public
    */
-  _collapse(emitEvent) {
-    if (this._expanded) {
+  collapse(emitEvent) {
+    if (this.expanded) {
       this._optionsList.style.display = 'none';
-      this._expanded = !this._expanded;
+      this.expanded = !this.expanded;
       utils.removeClass(this._arrow, `${ARROW_UP_CLASS}`);
       utils.addClass(this._arrow, `${ARROW_DOWN_CLASS}`);
     }
-    if (emitEvent) {
-      this.emit('collapse');
+    if (!emitEvent) {
+      return;
     }
+    this.emit('collapse');
   }
 
   /**
