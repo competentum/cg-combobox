@@ -109,9 +109,7 @@ class CgCombobox extends EventEmitter {
     this._addListeners();
   }
 
-
   _applySettings(settings) {
-    //debugger;
     const DEFAULT_SETTINGS = this.constructor.DEFAULT_SETTINGS;
 
     this.settings = merge({}, DEFAULT_SETTINGS, settings);
@@ -195,7 +193,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _renderOptionsList() {
-    let optionsListHTML = `<ul role="listbox" id="owned_listbox" class=${LIST_CLASS}></ul>`;
+    let optionsListHTML = `<ul role="listbox" class=${LIST_CLASS}></ul>`;
 
     this._optionsList = utils.createHTML(optionsListHTML);
     this._updateOptionsList();
@@ -208,8 +206,8 @@ class CgCombobox extends EventEmitter {
     this._currentItemsArray = [];
     this._optionsList.innerHTML = '';
     this.settings.options.forEach((option, index) => {
+      this._currentItemsArray.push(option);
       if (this.settings.filtering) {
-        this._currentItemsArray.push(option);
         if (this._currentItemsArray[index].value.indexOf(this._input.value) === -1) {
           return;
         }
@@ -276,24 +274,23 @@ class CgCombobox extends EventEmitter {
       this.collapse();
     } else {
       this.expand();
-      this._updateOptionsList();
     }
   }
 
   /**
    * @private
    */
-  _onListClick(event) {
-    this.value = event.target.textContent;
-    this._textTitle.textContent = this.settings.textTitle;
-    this.collapse();
+  _onOptionClick(event) {
+    this._selectListItem(event.target);
   }
 
   /**
    * @private
    */
-  _onOptionClick(event) {
-
+  _selectListItem(item) {
+    this.value = item.textContent;
+    this._textTitle.textContent = this.settings.textTitle;
+    this.collapse();
   }
 
   /**
@@ -351,6 +348,12 @@ class CgCombobox extends EventEmitter {
       case keycode.LEFT:
         this._moveFocusUp();
         break;
+      case keycode.ENTER:
+        this._selectListItem(event.target);
+        break;
+      case keycode.SPACE:
+        this._selectListItem(event.target);
+        break;
     }
   }
 
@@ -358,7 +361,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _moveFocusDown() {
-    if (this._currentListItemIndex < this._currentItemsArray.length) {
+    if (this._currentListItemIndex < this._currentItemsArray.length - 1) {
       this._optionsList.childNodes[++this._currentListItemIndex].focus();
     }
   }
@@ -367,7 +370,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _moveFocusUp() {
-    if (this._currentListItemIndex > 1) {
+    if (this._currentListItemIndex > 0) {
       this._optionsList.childNodes[--this._currentListItemIndex].focus();
     }
   }
@@ -386,10 +389,10 @@ class CgCombobox extends EventEmitter {
   expand(emitEvent) {
     if (this.expanded === false) {
       this._optionsList.style.display = 'block';
-      this._optionsList.addEventListener('click', this._onListClick.bind(this));
       this.expanded = !this.expanded;
       utils.removeClass(this._arrow, `${ARROW_DOWN_CLASS}`);
       utils.addClass(this._arrow, `${ARROW_UP_CLASS}`);
+      this._renderOptionsList();
       this._currentListItemIndex = 0;
       this._optionsList.childNodes[this._currentListItemIndex].focus();
       utils.addClass(this._optionsList.childNodes[this._currentListItemIndex], LIST_ITEM_FOCUSED_CLASS);
