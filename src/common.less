@@ -3,6 +3,7 @@
 @list-item-color: rgba(.5, .5, .5, .2);
 @list-shadow-color: rgba(0, 0, 0, .5);
 @disabled-list-item-color: rgba(1, 0, 0, .3);
+@focused-list-item-color: rgba(1, 0, 0, .1);
 @prefix: cg-combobox;
 @valueWidth: 75%;
 @listStdHeight: 100px;
@@ -106,4 +107,17 @@ body {
 
 .@{prefix}-input-disabled:hover {
   cursor: default;
+}
+
+.@{prefix}-text-title {
+  position: absolute;
+  color: @main-color;
+  font-weight: 700;
+  font-size: .9em;
+  margin-top: .1%;
+}
+
+.@{prefix}-list-item-focused {
+  background-color: @focused-list-item-color;
+  outline: none;
 }

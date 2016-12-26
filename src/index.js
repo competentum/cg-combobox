@@ -18,6 +18,8 @@ const INPUT_DISABLED_CLASS = `${PREFIX}-input-disabled`;
 const ARROW_UP_CLASS = `${PREFIX}-arrow-up`;
 const ARROW_DOWN_CLASS = `${PREFIX}-arrow-down`;
 const LIST_ITEM_DISABLED_CLASS = `${PREFIX}-list-item-disabled`;
+const TEXT_TITLE_CLASS = `${PREFIX}-text-title`;
+const LIST_ITEM_FOCUSED_CLASS = `${PREFIX}-list-item-focused`;
 
 // todo: describe settings properties here
 /**
@@ -38,6 +40,7 @@ class CgCombobox extends EventEmitter {
     if (!this._DEFAULT_SETTINGS) {
       // TODO: fill in standard events handlers below
       this._DEFAULT_SETTINGS = {
+        textTitle: 'Title',
         title: 'Combobox',
         options: [],
         selected: 0,
@@ -101,7 +104,6 @@ class CgCombobox extends EventEmitter {
 
     this._applySettings(settings);
     this.expanded = false;
-    this.placeholder = '';
     this._currentItemsArray = [];
     this._render();
     this._addListeners();
@@ -150,9 +152,10 @@ class CgCombobox extends EventEmitter {
   _render() {
     let elementHTML = `
       <div class=${ROOT_CLASS}>
+      <div class=${TEXT_TITLE_CLASS}></div>
         <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
   aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"
-  aria-label='${this.settings.title || this.constructor.DEFAULT_SETTINGS.title}'>
+  aria-label='${this.settings.title || this.constructor.DEFAULT_SETTINGS.title}' value=${this.settings.textTitle}>
         <div class=${BUTTON_CLASS}>
           <div class="${ARROW_CLASS}"></div>
         </div>
@@ -163,6 +166,7 @@ class CgCombobox extends EventEmitter {
     this._button = this._rootElement.querySelector(`.${BUTTON_CLASS}`);
     this._input = this._rootElement.querySelector(`.${INPUT_CLASS}`);
     this._arrow = this._rootElement.querySelector(`.${ARROW_CLASS}`);
+    this._textTitle = this._rootElement.querySelector(`.${TEXT_TITLE_CLASS}`);
     utils.addClass(this._arrow, `${ARROW_DOWN_CLASS}`);
     if (this.settings.inputEnabled === false) {
       this._input.setAttribute('disabled', 'disabled');
@@ -249,19 +253,6 @@ class CgCombobox extends EventEmitter {
     this._input.addEventListener('input', this._onInputChange.bind(this));
     this._input.addEventListener('click', this._onInputClick.bind(this));
     this._input.addEventListener('keydown', this._onKeyDown.bind(this));
-
-    /*this.on(this.constructor.EVENTS.EXPAND, () => {
-     this.options.onExpand();
-     });
-     this.on(this.constructor.EVENTS.COLLAPSE, () => {
-     this.options.onCollapse();
-     });
-     this.on(this.constructor.EVENTS.CHECK, (index) => {
-     this.options.onCheck(index);
-     });
-    this.on(this.constructor.EVENTS.CHANGE, (value, index) => {
-      this.settings.onChange(value, index);
-    });*/
   }
 
   /**
@@ -294,6 +285,7 @@ class CgCombobox extends EventEmitter {
    */
   _onListClick(event) {
     this.value = event.target.textContent;
+    this._textTitle.textContent = this.settings.textTitle;
     this.collapse();
   }
 
@@ -314,6 +306,10 @@ class CgCombobox extends EventEmitter {
     if (this.settings.filtering) {
       this._clearOptionsList();
       this._updateOptionsList();
+    }
+    if (this._input.value === '') {
+      this._input.value = this.settings.textTitle;
+      this._textTitle.textContent = '';
     }
   }
 
@@ -377,11 +373,11 @@ class CgCombobox extends EventEmitter {
   }
 
   _onListItemFocus(event) {
-    event.target.setAttribute('style', 'background-color: rgba(1, 0, 0, .1); outline: none;');
+    utils.addClass(event.target, LIST_ITEM_FOCUSED_CLASS);
   }
 
   _onListItemBlur(event) {
-    event.target.setAttribute('style', 'background-color: none;');
+    utils.removeClass(event.target, LIST_ITEM_FOCUSED_CLASS);
   }
 
   /**
@@ -394,14 +390,13 @@ class CgCombobox extends EventEmitter {
       this.expanded = !this.expanded;
       utils.removeClass(this._arrow, `${ARROW_DOWN_CLASS}`);
       utils.addClass(this._arrow, `${ARROW_UP_CLASS}`);
-      this._currentListItemIndex = 1;
+      this._currentListItemIndex = 0;
       this._optionsList.childNodes[this._currentListItemIndex].focus();
-      this._optionsList.childNodes[this._currentListItemIndex].setAttribute('style', 'background-color: rgba(1, 0, 0, 0.1); outline: none;');
+      utils.addClass(this._optionsList.childNodes[this._currentListItemIndex], LIST_ITEM_FOCUSED_CLASS);
       this._optionsList.childNodes.forEach((value, index) => {
         value.addEventListener('keydown', this._onListItemKeyDown.bind(this));
         value.addEventListener('focus', this._onListItemFocus.bind(this));
         value.addEventListener('blur', this._onListItemBlur.bind(this));
-        //debugger;
         if (this._currentItemsArray[index]) {
           if (this._currentItemsArray[index].disabled === false) {
             value.addEventListener('click', this._onOptionClick.bind(this));
