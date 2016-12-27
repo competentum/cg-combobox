@@ -105,6 +105,7 @@ class CgCombobox extends EventEmitter {
     this._applySettings(settings);
     this.expanded = false;
     this._currentItemsArray = [];
+    
     this._render();
     this._addListeners();
   }
@@ -153,7 +154,7 @@ class CgCombobox extends EventEmitter {
       <div class=${TEXT_TITLE_CLASS}></div>
         <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
   aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"
-  aria-label='${this.settings.title || this.constructor.DEFAULT_SETTINGS.title}' value=${this.settings.textTitle}>
+  aria-label='${this.settings.title || this.constructor.DEFAULT_SETTINGS.title}' placeholder=${this.settings.textTitle}>
         <div class=${BUTTON_CLASS}>
           <div class="${ARROW_CLASS}"></div>
         </div>
@@ -205,15 +206,16 @@ class CgCombobox extends EventEmitter {
   _updateOptionsList() {
     this._currentItemsArray = [];
     this._optionsList.innerHTML = '';
-    this.settings.options.forEach((option, index) => {
-      this._currentItemsArray.push(option);
+
+    for (let i = 0; i < this.settings.options.length; i++) {
+      this._currentItemsArray.push(this.settings.options[i]);
       if (this.settings.filtering) {
-        if (this._currentItemsArray[index].value.indexOf(this._input.value) === -1) {
-          return;
+        if (this._currentItemsArray[i].value.indexOf(this._input.value) === -1) {
+          continue;
         }
       }
-      this._addOptionsListItem(option);
-    });
+      this._addOptionsListItem(this.settings.options[i]);
+    }
 
     let prevOptionsList = this._rootElement.querySelector(`.${LIST_CLASS}`);
 
@@ -288,9 +290,12 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _selectListItem(item) {
+    this.collapse();
+    if (item.getAttribute('class').indexOf(LIST_ITEM_DISABLED_CLASS) !== -1 ) {
+      return;
+    }
     this.value = item.textContent;
     this._textTitle.textContent = this.settings.textTitle;
-    this.collapse();
   }
 
   /**
@@ -305,7 +310,6 @@ class CgCombobox extends EventEmitter {
       this._updateOptionsList();
     }
     if (this._input.value === '') {
-      this._input.value = this.settings.textTitle;
       this._textTitle.textContent = '';
     }
   }
@@ -326,6 +330,9 @@ class CgCombobox extends EventEmitter {
   _onKeyDown(event) {
     if (event.keyCode === keycode.DOWN) {
       this.expand();
+      this._currentListItemIndex = 0;
+      this._optionsList.childNodes[this._currentListItemIndex].focus();
+      utils.addClass(this._optionsList.childNodes[this._currentListItemIndex], LIST_ITEM_FOCUSED_CLASS);
     }
   }
 
@@ -333,6 +340,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _onListItemKeyDown(event) {
+    //debugger;
     let keyCode = event.keyCode;
 
     switch (keyCode) {
@@ -394,18 +402,16 @@ class CgCombobox extends EventEmitter {
       utils.addClass(this._arrow, `${ARROW_UP_CLASS}`);
       this._renderOptionsList();
       this._currentListItemIndex = 0;
-      this._optionsList.childNodes[this._currentListItemIndex].focus();
-      utils.addClass(this._optionsList.childNodes[this._currentListItemIndex], LIST_ITEM_FOCUSED_CLASS);
-      this._optionsList.childNodes.forEach((value, index) => {
-        value.addEventListener('keydown', this._onListItemKeyDown.bind(this));
-        value.addEventListener('focus', this._onListItemFocus.bind(this));
-        value.addEventListener('blur', this._onListItemBlur.bind(this));
-        if (this._currentItemsArray[index]) {
-          if (this._currentItemsArray[index].disabled === false) {
-            value.addEventListener('click', this._onOptionClick.bind(this));
+      for (let i = 0; i < this._optionsList.childNodes.length; i++) {
+        this._optionsList.childNodes[i].addEventListener('keydown', this._onListItemKeyDown.bind(this));
+        this._optionsList.childNodes[i].addEventListener('focus', this._onListItemFocus.bind(this));
+        this._optionsList.childNodes[i].addEventListener('blur', this._onListItemBlur.bind(this));
+        if (this._currentItemsArray[i]) {
+          if (this._currentItemsArray[i].disabled === false) {
+            this._optionsList.childNodes[i].addEventListener('click', this._onOptionClick.bind(this));
           }
         }
-      });
+      }
       if (!emitEvent) {
         return;
       }
