@@ -105,7 +105,7 @@ class CgCombobox extends EventEmitter {
     this._applySettings(settings);
     this.expanded = false;
     this._currentItemsArray = [];
-    
+
     this._render();
     this._addListeners();
   }
@@ -241,7 +241,19 @@ class CgCombobox extends EventEmitter {
     if (newItem.disabled) {
       newOptionsListItem.setAttribute('class', `${LIST_ITEM_DISABLED_CLASS} ${LIST_ITEM_CLASS}`);
     }
+
     this._optionsList.appendChild(newOptionsListItem);
+    let offsetTop = this._rootElement.offsetTop;
+
+    if (this.settings.direction === 'up') {
+      let currentMargin = 44 * this.settings.options.length;
+      if (offsetTop < currentMargin) {
+        this.settings.direction = 'down';
+        return;
+      }
+
+      this._optionsList.style.marginTop = "-" + (currentMargin) + "px";
+    }
   }
 
   /**
@@ -291,7 +303,7 @@ class CgCombobox extends EventEmitter {
    */
   _selectListItem(item) {
     this.collapse();
-    if (item.getAttribute('class').indexOf(LIST_ITEM_DISABLED_CLASS) !== -1 ) {
+    if (item.getAttribute('class').indexOf(LIST_ITEM_DISABLED_CLASS) !== -1) {
       return;
     }
     this.value = item.textContent;
@@ -340,7 +352,6 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _onListItemKeyDown(event) {
-    //debugger;
     let keyCode = event.keyCode;
 
     switch (keyCode) {
