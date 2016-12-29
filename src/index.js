@@ -20,6 +20,8 @@ const ARROW_DOWN_CLASS = `${PREFIX}-arrow-down`;
 const LIST_ITEM_DISABLED_CLASS = `${PREFIX}-list-item-disabled`;
 const TEXT_TITLE_CLASS = `${PREFIX}-text-title`;
 const LIST_ITEM_FOCUSED_CLASS = `${PREFIX}-list-item-focused`;
+const LIST_ITEM_PICTURE = `${PREFIX}-list-item-picture`;
+const LIST_ITEM_TEXT = `${PREFIX}-list-item-text`;
 
 // todo: describe settings properties here
 /**
@@ -193,11 +195,46 @@ class CgCombobox extends EventEmitter {
   /**
    * @private
    */
+  _checkConstraints() {
+    let offsetTop = this._rootElement.offsetTop;
+    let currentMargin = (this._currentLIHeight+1) * this.settings.options.length;
+
+    if (((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) && offsetTop < currentMargin) {
+      if (this.settings.direction === 'up') {
+        this._optionsList.style.marginTop = '-' + (currentMargin) + 'px';
+      }
+      else if (this.settings.direction === 'bottom') {
+        this._optionsList.style.marginTop = '0px';
+      }
+      return;
+    }
+    if (this.settings.direction === 'up') {
+      if (offsetTop < currentMargin) {
+        this._optionsList.style.marginTop = '0px';
+      }
+      else {
+        this._optionsList.style.marginTop = '-' + (currentMargin) + 'px';
+      }
+    }
+    else if (this.settings.direction === 'bottom') {
+      if ((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) {
+        this._optionsList.style.marginTop = '-' + (currentMargin) + 'px';
+      }
+      else {
+        this._optionsList.style.marginTop = '0px';
+      }
+    }
+  }
+
+  /**
+   * @private
+   */
   _renderOptionsList() {
     let optionsListHTML = `<ul role="listbox" class=${LIST_CLASS}></ul>`;
 
     this._optionsList = utils.createHTML(optionsListHTML);
     this._updateOptionsList();
+    this._checkConstraints();
   }
 
   /**
@@ -205,7 +242,9 @@ class CgCombobox extends EventEmitter {
    */
   _updateOptionsList() {
     this._currentItemsArray = [];
-    this._optionsList.innerHTML = '';
+    /*if (this._optionsList.querySelector(`.${LIST_ITEM_TEXT}`)) {
+      this._optionsList.querySelector(`.${LIST_ITEM_TEXT}`).innerHTML = '';
+    }*/
 
     for (let i = 0; i < this.settings.options.length; i++) {
       this._currentItemsArray.push(this.settings.options[i]);
@@ -224,6 +263,7 @@ class CgCombobox extends EventEmitter {
         this._rootElement.removeChild(prevOptionsList);
       }
       this._rootElement.appendChild(this._optionsList);
+      this._currentLIHeight = document.getElementsByClassName(LIST_ITEM_CLASS)[0].getBoundingClientRect().height;
     }
   }
 
@@ -232,28 +272,24 @@ class CgCombobox extends EventEmitter {
    * @param {Object} newItem
    */
   _addOptionsListItem(newItem) {
-    let optionsListItemHTML = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1"></li>`;
+    let optionsListItemHTML;
+    // todo: render li's content if available
+    if (newItem.pic) {
+      optionsListItemHTML  = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1"><img src="${newItem.pic}"
+                                class="${LIST_ITEM_PICTURE}" alt=""><span class="${LIST_ITEM_TEXT}"></span></li>`;
+    }
+    else {
+      optionsListItemHTML  = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1">
+                                 <span class="${LIST_ITEM_TEXT}"></span></li>`;
+    }
 
     let newOptionsListItem = utils.createHTML(optionsListItemHTML);
 
-    newOptionsListItem = utils.createHTML(optionsListItemHTML);
     newOptionsListItem.textContent = newItem.value;
     if (newItem.disabled) {
       newOptionsListItem.setAttribute('class', `${LIST_ITEM_DISABLED_CLASS} ${LIST_ITEM_CLASS}`);
     }
-
     this._optionsList.appendChild(newOptionsListItem);
-    let offsetTop = this._rootElement.offsetTop;
-
-    if (this.settings.direction === 'up') {
-      let currentMargin = 44 * this.settings.options.length;
-      if (offsetTop < currentMargin) {
-        this.settings.direction = 'down';
-        return;
-      }
-
-      this._optionsList.style.marginTop = "-" + (currentMargin) + "px";
-    }
   }
 
   /**
@@ -261,6 +297,7 @@ class CgCombobox extends EventEmitter {
    */
   _addListeners() {
     document.addEventListener('click', this._onOutSideClick.bind(this));
+    window.onresize = () => {this._checkConstraints();};
     this._button.addEventListener('click', this._onButtonClick.bind(this));
     this._input.addEventListener('input', this._onInputChange.bind(this));
     this._input.addEventListener('click', this._onInputClick.bind(this));
