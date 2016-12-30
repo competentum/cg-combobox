@@ -197,11 +197,11 @@ class CgCombobox extends EventEmitter {
    */
   _checkConstraints() {
     let offsetTop = this._rootElement.offsetTop;
-    let currentMargin = (this._currentLIHeight+1) * this.settings.options.length;
+    let currentMargin = (this._currentLIHeight + 1) * this.settings.options.length;
 
     if (((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) && offsetTop < currentMargin) {
       if (this.settings.direction === 'up') {
-        this._optionsList.style.marginTop = '-' + (currentMargin) + 'px';
+        this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
       }
       else if (this.settings.direction === 'bottom') {
         this._optionsList.style.marginTop = '0px';
@@ -213,12 +213,12 @@ class CgCombobox extends EventEmitter {
         this._optionsList.style.marginTop = '0px';
       }
       else {
-        this._optionsList.style.marginTop = '-' + (currentMargin) + 'px';
+        this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
       }
     }
     else if (this.settings.direction === 'bottom') {
       if ((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) {
-        this._optionsList.style.marginTop = '-' + (currentMargin) + 'px';
+        this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
       }
       else {
         this._optionsList.style.marginTop = '0px';
@@ -243,8 +243,8 @@ class CgCombobox extends EventEmitter {
   _updateOptionsList() {
     this._currentItemsArray = [];
     /*if (this._optionsList.querySelector(`.${LIST_ITEM_TEXT}`)) {
-      this._optionsList.querySelector(`.${LIST_ITEM_TEXT}`).innerHTML = '';
-    }*/
+     this._optionsList.querySelector(`.${LIST_ITEM_TEXT}`).innerHTML = '';
+     }*/
 
     for (let i = 0; i < this.settings.options.length; i++) {
       this._currentItemsArray.push(this.settings.options[i]);
@@ -275,11 +275,11 @@ class CgCombobox extends EventEmitter {
     let optionsListItemHTML;
     // todo: render li's content if available
     if (newItem.pic) {
-      optionsListItemHTML  = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1"><img src="${newItem.pic}"
+      optionsListItemHTML = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1"><img src="${newItem.pic}"
                                 class="${LIST_ITEM_PICTURE}" alt=""><span class="${LIST_ITEM_TEXT}"></span></li>`;
     }
     else {
-      optionsListItemHTML  = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1">
+      optionsListItemHTML = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1">
                                  <span class="${LIST_ITEM_TEXT}"></span></li>`;
     }
 
@@ -297,7 +297,9 @@ class CgCombobox extends EventEmitter {
    */
   _addListeners() {
     document.addEventListener('click', this._onOutSideClick.bind(this));
-    window.onresize = () => {this._checkConstraints();};
+    window.onresize = () => {
+      this._checkConstraints();
+    };
     this._button.addEventListener('click', this._onButtonClick.bind(this));
     this._input.addEventListener('input', this._onInputChange.bind(this));
     this._input.addEventListener('click', this._onInputClick.bind(this));
@@ -484,14 +486,25 @@ class CgCombobox extends EventEmitter {
   }
 
   /**
-   * @param {Array} newValues
+   * @param {Array} newItems
    **/
-  addValues(newValues) {
-    newValues.forEach((value) => {
+  addItems(newItems) {
+    newItems.forEach((value) => {
       this.settings.options.push(value);
     });
   }
 
+  /**
+   * @param {string} itemToDelete
+   **/
+  deleteItem(itemToDelete) {
+    debugger;
+    this.settings.options.forEach((value, index) => {
+      if (value.value === itemToDelete) {
+        this.settings.options.splice(index, 1);
+      }
+    });
+  }
 }
 
 module.exports = CgCombobox;

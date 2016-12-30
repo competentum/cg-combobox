@@ -22,7 +22,7 @@
                     value: 'option1',
                     description: 'option 1 description',
                     disabled: false,
-                    pic: 'dd'
+                    pic: 'src'
                 },
                 {
                     value: 'option2',
@@ -38,9 +38,11 @@
             disabled: false,
             inputEnabled: true,
             filtering: true,
-            direction: 'bottom'
+            direction: 'up'
         }
     );
+
+    combo.deleteItem('option3');
 </script>
 </body>
 </html>
