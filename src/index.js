@@ -114,7 +114,7 @@ class CgCombobox extends EventEmitter {
 
   _applySettings(settings) {
     const DEFAULT_SETTINGS = this.constructor.DEFAULT_SETTINGS;
-
+    //debugger;
     this.settings = merge({}, DEFAULT_SETTINGS, settings);
     //this.constructor._fixSettings(settings);
 
@@ -145,6 +145,12 @@ class CgCombobox extends EventEmitter {
         this[key] = settings[key];
       }
     }
+
+    for (let i = 0; i < settings.options.length; i++) {
+      if (settings.options[i].disabled === undefined) {
+        settings.options[i].disabled = false;
+      }
+    }
   }
 
   /**
@@ -156,7 +162,7 @@ class CgCombobox extends EventEmitter {
       <div class=${TEXT_TITLE_CLASS}></div>
         <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
   aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"
-  aria-label='${this.settings.title || this.constructor.DEFAULT_SETTINGS.title}' placeholder=${this.settings.textTitle}>
+  aria-label='${this.settings.title}' placeholder=${this.settings.textTitle}>
         <div class=${BUTTON_CLASS}>
           <div class="${ARROW_CLASS}"></div>
         </div>
@@ -242,9 +248,6 @@ class CgCombobox extends EventEmitter {
    */
   _updateOptionsList() {
     this._currentItemsArray = [];
-    /*if (this._optionsList.querySelector(`.${LIST_ITEM_TEXT}`)) {
-     this._optionsList.querySelector(`.${LIST_ITEM_TEXT}`).innerHTML = '';
-     }*/
 
     for (let i = 0; i < this.settings.options.length; i++) {
       this._currentItemsArray.push(this.settings.options[i]);
@@ -273,7 +276,7 @@ class CgCombobox extends EventEmitter {
    */
   _addOptionsListItem(newItem) {
     let optionsListItemHTML;
-    // todo: render li's content if available
+
     if (newItem.pic) {
       optionsListItemHTML = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1"><img src="${newItem.pic}"
                                 class="${LIST_ITEM_PICTURE}" alt=""><span class="${LIST_ITEM_TEXT}"></span></li>`;
@@ -285,7 +288,12 @@ class CgCombobox extends EventEmitter {
 
     let newOptionsListItem = utils.createHTML(optionsListItemHTML);
 
-    newOptionsListItem.textContent = newItem.value;
+    if (newItem.pic) {
+      newOptionsListItem.childNodes[1].textContent = newItem.value;
+    }
+    else {
+      newOptionsListItem.textContent = newItem.value;
+    }
     if (newItem.disabled) {
       newOptionsListItem.setAttribute('class', `${LIST_ITEM_DISABLED_CLASS} ${LIST_ITEM_CLASS}`);
     }
@@ -419,7 +427,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _moveFocusDown() {
-    if (this._currentListItemIndex < this._currentItemsArray.length - 1) {
+    if (this._currentListItemIndex < this._optionsList.childNodes.length - 1) {
       this._optionsList.childNodes[++this._currentListItemIndex].focus();
     }
   }
@@ -490,6 +498,9 @@ class CgCombobox extends EventEmitter {
    **/
   addItems(newItems) {
     newItems.forEach((value) => {
+      if (value.disabled === undefined) {
+        value.disabled = false;
+      }
       this.settings.options.push(value);
     });
   }
@@ -498,7 +509,6 @@ class CgCombobox extends EventEmitter {
    * @param {string} itemToDelete
    **/
   deleteItem(itemToDelete) {
-    debugger;
     this.settings.options.forEach((value, index) => {
       if (value.value === itemToDelete) {
         this.settings.options.splice(index, 1);
