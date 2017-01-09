@@ -42,13 +42,16 @@ class CgCombobox extends EventEmitter {
     if (!this._DEFAULT_SETTINGS) {
       // TODO: fill in standard events handlers below
       this._DEFAULT_SETTINGS = {
+        //todo: rename this to placeholder
         textTitle: 'Title',
         title: 'Combobox',
         options: [],
         selected: 0,
         disabled: false,
+        //todo: add direction 'auto' and set it by default
         direction: 'bottom',
         prompt: null,
+        //todo: can inputEnabled and filtering be different? For which cases?
         inputEnabled: false,
         filtering: false,
         onExpand: function () {
@@ -94,6 +97,7 @@ class CgCombobox extends EventEmitter {
    * @param {boolean} newDisabledValue
    */
   set disabled(newDisabledValue) {
+    //todo: disable input and
     this.settings.disabled = newDisabledValue;
   }
 
@@ -105,6 +109,7 @@ class CgCombobox extends EventEmitter {
     super();
 
     this._applySettings(settings);
+    //todo: is .expanded property private or public?
     this.expanded = false;
     this._currentItemsArray = [];
 
@@ -115,9 +120,12 @@ class CgCombobox extends EventEmitter {
   _applySettings(settings) {
     const DEFAULT_SETTINGS = this.constructor.DEFAULT_SETTINGS;
 
+    //todo: settings is public
     this.settings = merge({}, DEFAULT_SETTINGS, settings);
+    //todo: remove commented code
     //this.constructor._fixSettings(settings);
 
+    //todo: there is no SliderSettings type. Describe type above
     /** @type SliderSettings */
     //this.settings = {};
 
@@ -139,6 +147,7 @@ class CgCombobox extends EventEmitter {
     }
     delete settings.container;
 
+    //todo: add get/set methods to implement this functionality
     // call setters for settings which defined in DEFAULT_SETTINGS only
     for (let key in DEFAULT_SETTINGS) {
       if (DEFAULT_SETTINGS.hasOwnProperty(key)) {
@@ -164,9 +173,12 @@ class CgCombobox extends EventEmitter {
     `;
 
     this._rootElement = utils.createHTML(elementHTML);
+    //todo: make it with button tag to be able use disabled attribute
     this._button = this._rootElement.querySelector(`.${BUTTON_CLASS}`);
     this._input = this._rootElement.querySelector(`.${INPUT_CLASS}`);
+    //todo: (optional) remove arrow and replace this functionality by button's pseudo element which will depend by attribute
     this._arrow = this._rootElement.querySelector(`.${ARROW_CLASS}`);
+    //todo: it is not
     this._textTitle = this._rootElement.querySelector(`.${TEXT_TITLE_CLASS}`);
     utils.addClass(this._arrow, `${ARROW_DOWN_CLASS}`);
     if (this.settings.inputEnabled === false) {
@@ -199,6 +211,7 @@ class CgCombobox extends EventEmitter {
     let offsetTop = this._rootElement.offsetTop;
     let currentMargin = (this._currentLIHeight + 1) * this.settings.options.length;
 
+    //todo: Remove margin calc. Make with css depending on attribute.
     if (((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) && offsetTop < currentMargin) {
       if (this.settings.direction === 'up') {
         this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
@@ -287,6 +300,7 @@ class CgCombobox extends EventEmitter {
 
     newOptionsListItem.textContent = newItem.value;
     if (newItem.disabled) {
+      //todo: use addClass method
       newOptionsListItem.setAttribute('class', `${LIST_ITEM_DISABLED_CLASS} ${LIST_ITEM_CLASS}`);
     }
     this._optionsList.appendChild(newOptionsListItem);
@@ -297,9 +311,11 @@ class CgCombobox extends EventEmitter {
    */
   _addListeners() {
     document.addEventListener('click', this._onOutSideClick.bind(this));
+    //todo: Add listener with addEventListener method
     window.onresize = () => {
       this._checkConstraints();
     };
+    //todo: think about click listener. Now it doesn't work on input when it disabled.
     this._button.addEventListener('click', this._onButtonClick.bind(this));
     this._input.addEventListener('input', this._onInputChange.bind(this));
     this._input.addEventListener('click', this._onInputClick.bind(this));
@@ -369,6 +385,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _onInputClick() {
+    //todo: this click does not work when input is disabled.
     if (this.settings.disabled) {
       return;
     }
@@ -379,6 +396,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _onKeyDown(event) {
+    //todo: Discuss this functionality. May be: down and up arrows should change value, enter and space - open list
     if (event.keyCode === keycode.DOWN) {
       this.expand();
       this._currentListItemIndex = 0;
@@ -394,6 +412,7 @@ class CgCombobox extends EventEmitter {
     let keyCode = event.keyCode;
 
     switch (keyCode) {
+      //todo: Remove duplications. Read https://learn.javascript.ru/switch#группировка-case
       case keycode.DOWN:
         this._moveFocusDown();
         break;
@@ -441,18 +460,22 @@ class CgCombobox extends EventEmitter {
     utils.removeClass(event.target, LIST_ITEM_FOCUSED_CLASS);
   }
 
+  //todo: improve js-docs for public methods
   /**
    * @public
    */
   expand(emitEvent) {
+    //todo: Why '=== false', not just !this.expanded? Is boolean type really important here? In collapse method it is without '=== true'
     if (this.expanded === false) {
       this._optionsList.style.display = 'block';
       this.expanded = !this.expanded;
+      //todo: Wrapping in `${}` is redundant here. `${ARROW_DOWN_CLASS}` -> ARROW_DOWN_CLASS
       utils.removeClass(this._arrow, `${ARROW_DOWN_CLASS}`);
       utils.addClass(this._arrow, `${ARROW_UP_CLASS}`);
       this._renderOptionsList();
       this._currentListItemIndex = 0;
       for (let i = 0; i < this._optionsList.childNodes.length; i++) {
+        //todo: this._optionsList.childNodes to local variable
         this._optionsList.childNodes[i].addEventListener('keydown', this._onListItemKeyDown.bind(this));
         this._optionsList.childNodes[i].addEventListener('focus', this._onListItemFocus.bind(this));
         this._optionsList.childNodes[i].addEventListener('blur', this._onListItemBlur.bind(this));
@@ -465,6 +488,7 @@ class CgCombobox extends EventEmitter {
       if (!emitEvent) {
         return;
       }
+      //todo: use const
       this.emit('expand');
     }
   }
@@ -476,15 +500,18 @@ class CgCombobox extends EventEmitter {
     if (this.expanded) {
       this._optionsList.style.display = 'none';
       this.expanded = !this.expanded;
+      //todo: Wrapping in `${}` is redundant here. `${ARROW_DOWN_CLASS}` -> ARROW_DOWN_CLASS
       utils.removeClass(this._arrow, `${ARROW_UP_CLASS}`);
       utils.addClass(this._arrow, `${ARROW_DOWN_CLASS}`);
     }
     if (!emitEvent) {
       return;
     }
+    //todo: use const
     this.emit('collapse');
   }
 
+  //todo: why method is called 'addItems' but not 'addOptions' if it adds option?
   /**
    * @param {Array} newItems
    **/
@@ -498,7 +525,8 @@ class CgCombobox extends EventEmitter {
    * @param {string} itemToDelete
    **/
   deleteItem(itemToDelete) {
-    debugger;
+    //todo: wtf? commented debugger to prevent lint error
+    //debugger;
     this.settings.options.forEach((value, index) => {
       if (value.value === itemToDelete) {
         this.settings.options.splice(index, 1);

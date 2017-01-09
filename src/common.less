@@ -5,8 +5,10 @@
 @disabled-list-item-color: rgba(1, 0, 0, .3);
 @focused-list-item-color: rgba(1, 0, 0, .1);
 @prefix: cg-combobox;
+//todo: why?
 @valueWidth: 80%;
 
+//todo: Component css should not change global styles. Also we support ie9 so flex is not allowed here.
 body {
   display: flex;
   align-items: center;
@@ -39,6 +41,7 @@ body {
   position: relative;
   display: inline-block;
   height: 100%;
+  //todo: make this size not relative
   width: 10%;
   margin-left: -10%;
   margin-bottom: -6px;
@@ -68,6 +71,7 @@ body {
   margin: 0;
   padding: 5% 0;
   padding-left: 5%;
+  //todo: why?
   width: 90%;
 }
 
