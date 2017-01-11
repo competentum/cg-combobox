@@ -30,7 +30,6 @@ const LIST_ITEM_TEXT = `${PREFIX}-list-item-text`;
  * @property {Element|string} container - DOM Element or element id in which slider should be rendered.
  *                                        This property can be omitted. In this case new DOM element will be created and can be accessed via `sliderInstance.container`
  */
-
 class CgCombobox extends EventEmitter {
 
   /**
@@ -95,7 +94,9 @@ class CgCombobox extends EventEmitter {
    */
   set disabled(newDisabledValue) {
     this.settings.disabled = newDisabledValue;
-    //this.settings.inputEnabled = false;
+    if (this._input) {
+      this._input.setAttribute('disabled', 'true');
+    }
   }
 
   /**
@@ -209,7 +210,7 @@ class CgCombobox extends EventEmitter {
       }
       return;
     }
-    if (this.settings.direction === 'up') {
+    /*if (this.settings.direction === 'up') {
       if (offsetTop < currentMargin) {
         this._optionsList.style.marginTop = '0px';
       }
@@ -224,7 +225,7 @@ class CgCombobox extends EventEmitter {
       else {
         this._optionsList.style.marginTop = '0px';
       }
-    }
+    }*/
   }
 
   /**

@@ -3,7 +3,13 @@
   "version": "0.0.1",
   "description": "Accessibale Combobox Component",
   "main": "build/cg-combobox.min.js",
+  "pre-commit": [
+    "test",
+    "lint"
+  ],
   "scripts": {
+    "build": "webpack",
+    "lint": "gulp lint",
     "test": "jest"
   },
   "repository": {
