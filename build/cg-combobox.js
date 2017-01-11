@@ -1,7 +1,7 @@
 /*!
- * cg-combobox v0.0.1 - Template Project for Competentum Group Components
+ * cg-combobox v0.0.1 - Accessibale Combobox Component
  * 
- * (c) 2015-2016 Competentum Group | http://competentum.com
+ * (c) 2015-2017 Competentum Group | http://competentum.com
  * Released under the MIT license
  * https://opensource.org/licenses/mit-license.php
  */
@@ -82,6 +82,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _cgComponentUtils2 = _interopRequireDefault(_cgComponentUtils);
 
+	var _merge = __webpack_require__(9);
+
+	var _merge2 = _interopRequireDefault(_merge);
+
+	var _keycode = __webpack_require__(11);
+
+	var _keycode2 = _interopRequireDefault(_keycode);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -89,6 +97,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var PREFIX = 'cg-combobox';
+	var ROOT_CLASS = PREFIX + '-root';
+	var INPUT_CLASS = PREFIX + '-input';
+	var BUTTON_CLASS = PREFIX + '-button';
+	var ARROW_CLASS = PREFIX + '-arrow';
+	var LIST_CLASS = PREFIX + '-list';
+	var LIST_ITEM_CLASS = PREFIX + '-list-item';
+	var INPUT_DISABLED_CLASS = PREFIX + '-input-disabled';
+	var ARROW_UP_CLASS = PREFIX + '-arrow-up';
+	var ARROW_DOWN_CLASS = PREFIX + '-arrow-down';
+	var LIST_ITEM_DISABLED_CLASS = PREFIX + '-list-item-disabled';
+	var TEXT_TITLE_CLASS = PREFIX + '-text-title';
+	var LIST_ITEM_FOCUSED_CLASS = PREFIX + '-list-item-focused';
+	var LIST_ITEM_PICTURE = PREFIX + '-list-item-picture';
+	var LIST_ITEM_TEXT = PREFIX + '-list-item-text';
 
 	// todo: describe settings properties here
 	/**
@@ -101,19 +125,70 @@ return /******/ (function(modules) { // webpackBootstrap
 	var CgCombobox = function (_EventEmitter) {
 	  _inherits(CgCombobox, _EventEmitter);
 
-	  _createClass(CgCombobox, null, [{
+	  _createClass(CgCombobox, [{
+	    key: 'value',
+
+
+	    /**
+	     * @returns {string} currentComboBoxValue
+	     */
+	    get: function get() {
+	      return this._input.value;
+	    }
+
+	    /**
+	     * @param {string} newValue
+	     */
+	    ,
+	    set: function set(newValue) {
+	      this._input.value = newValue;
+	      this.emit(this.constructor.EVENTS.CHANGE);
+	    }
+
+	    /**
+	     * @param {boolean} newDisabledValue
+	     */
+
+	  }, {
+	    key: 'disabled',
+	    set: function set(newDisabledValue) {
+	      this.settings.disabled = newDisabledValue;
+	      if (this._input) {
+	        this._input.setAttribute('disabled', 'true');
+	      }
+	    }
+
+	    /**
+	     * @constructor
+	     * @param {object} settings
+	     */
+
+	  }], [{
 	    key: 'DEFAULT_SETTINGS',
 
 
 	    /**
 	     *
-	     * @returns {TemplateComponentSettings}
+	     * @returns {ComboBoxComponentSettings}
 	     * @constructor
 	     */
 	    get: function get() {
 	      if (!this._DEFAULT_SETTINGS) {
+	        // TODO: fill in standard events handlers below
 	        this._DEFAULT_SETTINGS = {
-	          // todo: add defaults here
+	          placeholder: 'Title',
+	          title: 'Combobox',
+	          options: [],
+	          selected: 0,
+	          disabled: false,
+	          direction: 'bottom',
+	          prompt: null,
+	          inputEnabled: false,
+	          filtering: false,
+	          onExpand: function onExpand() {},
+	          onCollapse: function onCollapse() {},
+	          onCheck: function onCheck() {},
+	          onChange: function onChange() {}
 	        };
 	      }
 	      return this._DEFAULT_SETTINGS;
@@ -123,42 +198,487 @@ return /******/ (function(modules) { // webpackBootstrap
 	    get: function get() {
 	      if (!this._EVENTS) {
 	        this._EVENTS = {
-	          CHANGE: 'change'
+	          CHANGE: 'change',
+	          EXPAND: 'expand',
+	          COLLAPSE: 'collapse'
 	        };
 	      }
 	      return this._EVENTS;
 	    }
-
-	    /**
-	     *
-	     * @param {TemplateComponentSettings} settings
-	     */
-
 	  }]);
 
 	  function CgCombobox(settings) {
 	    _classCallCheck(this, CgCombobox);
 
-	    //todo: initialization
 	    var _this = _possibleConstructorReturn(this, (CgCombobox.__proto__ || Object.getPrototypeOf(CgCombobox)).call(this));
 
-	    _this.settings = settings;
+	    _this._applySettings(settings);
+	    _this.expanded = false;
+	    _this._currentItemsArray = [];
+
 	    _this._render();
+	    _this._addListeners();
 	    return _this;
 	  }
 
-	  /**
-	   * @private
-	   */
-
-
 	  _createClass(CgCombobox, [{
+	    key: '_applySettings',
+	    value: function _applySettings(settings) {
+	      var DEFAULT_SETTINGS = this.constructor.DEFAULT_SETTINGS;
+	      this.settings = (0, _merge2.default)({}, DEFAULT_SETTINGS, settings);
+
+	      if (settings.container instanceof Element) {
+	        this.container = settings.container;
+	      } else if (typeof settings.container === 'string') {
+	        this.container = document.getElementById(settings.container);
+	        if (!this.container) {
+	          throw new Error(this.constructor.name + ' initialization error: can not find element with id "' + settings.container + '".');
+	        }
+	      } else if (typeof settings.container === 'undefined') {
+	        this.container = document.createElement('div');
+	      } else {
+	        throw new Error(this.constructor.name + ' initialization error: type of "settings.container" property is unsupported.');
+	      }
+	      delete settings.container;
+
+	      // call setters for settings which defined in DEFAULT_SETTINGS only
+	      for (var key in DEFAULT_SETTINGS) {
+	        if (DEFAULT_SETTINGS.hasOwnProperty(key)) {
+	          this[key] = settings[key];
+	        }
+	      }
+
+	      for (var i = 0; i < settings.options.length; i++) {
+	        if (settings.options[i].disabled === undefined) {
+	          settings.options[i].disabled = false;
+	        }
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
 	    key: '_render',
 	    value: function _render() {
-	      //todo: draw here
-	      var elementHTML = '\n      <div>\n      <select aria-label="Tag" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option">\n            <option role="option">Zebra</option>\n            <option role="option" id="selected_option">Zoom</option>\n      </select>\n      </div>\n    ';
-	      this.wrapElement = _cgComponentUtils2.default.createHTML(elementHTML);
-	      document.body.appendChild(this.wrapElement);
+	      var elementHTML = '\n      <div class=' + ROOT_CLASS + '>\n      <div class=' + TEXT_TITLE_CLASS + '></div>\n        <input type="text" class=' + INPUT_CLASS + ' role="combobox" aria-expanded="true"\n  aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"\n  aria-label=\'' + this.settings.title + '\' placeholder=' + this.settings.placeholder + '>\n        <div class=' + BUTTON_CLASS + '>\n          <div class="' + ARROW_CLASS + '"></div>\n        </div>\n      </div>\n    ';
+
+	      this._rootElement = _cgComponentUtils2.default.createHTML(elementHTML);
+	      this._button = this._rootElement.querySelector('.' + BUTTON_CLASS);
+	      this._input = this._rootElement.querySelector('.' + INPUT_CLASS);
+	      this._arrow = this._rootElement.querySelector('.' + ARROW_CLASS);
+	      this._placeholder = this._rootElement.querySelector('.' + TEXT_TITLE_CLASS);
+	      _cgComponentUtils2.default.addClass(this._arrow, '' + ARROW_DOWN_CLASS);
+	      if (this.settings.inputEnabled === false) {
+	        this._input.setAttribute('disabled', 'disabled');
+	      }
+	      if (this.settings.disabled) {
+	        _cgComponentUtils2.default.addClass(this._input, '' + INPUT_DISABLED_CLASS);
+	        this._input.setAttribute('disabled', 'disabled');
+	      }
+	      this.container.appendChild(this._rootElement);
+
+	      this._renderOptionsList();
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_clearOptionsList',
+	    value: function _clearOptionsList() {
+	      var list = this._rootElement.querySelector('.' + LIST_CLASS);
+
+	      if (list) {
+	        list.innerHTML = '';
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_checkConstraints',
+	    value: function _checkConstraints() {
+	      var offsetTop = this._rootElement.offsetTop;
+	      var currentMargin = (this._currentLIHeight + 1) * this.settings.options.length;
+
+	      if (window.innerHeight - offsetTop - this._currentLIHeight < currentMargin && offsetTop < currentMargin) {
+	        if (this.settings.direction === 'up') {
+	          this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
+	        } else if (this.settings.direction === 'bottom') {
+	          this._optionsList.style.marginTop = '0px';
+	        }
+	        return;
+	      }
+	      /*if (this.settings.direction === 'up') {
+	        if (offsetTop < currentMargin) {
+	          this._optionsList.style.marginTop = '0px';
+	        }
+	        else {
+	          this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
+	        }
+	      }
+	      else if (this.settings.direction === 'bottom') {
+	        if ((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) {
+	          this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
+	        }
+	        else {
+	          this._optionsList.style.marginTop = '0px';
+	        }
+	      }*/
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_renderOptionsList',
+	    value: function _renderOptionsList() {
+	      var optionsListHTML = '<ul role="listbox" class=' + LIST_CLASS + '></ul>';
+
+	      this._optionsList = _cgComponentUtils2.default.createHTML(optionsListHTML);
+	      this._updateOptionsList();
+	      this._checkConstraints();
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_updateOptionsList',
+	    value: function _updateOptionsList() {
+	      this._currentItemsArray = [];
+
+	      for (var i = 0; i < this.settings.options.length; i++) {
+	        this._currentItemsArray.push(this.settings.options[i]);
+	        if (this.settings.filtering) {
+	          if (this._currentItemsArray[i].value.indexOf(this._input.value) === -1) {
+	            continue;
+	          }
+	        }
+	        this._addOptionsListItem(this.settings.options[i]);
+	      }
+
+	      var prevOptionsList = this._rootElement.querySelector('.' + LIST_CLASS);
+
+	      if (this.expanded) {
+	        if (prevOptionsList) {
+	          this._rootElement.removeChild(prevOptionsList);
+	        }
+	        this._rootElement.appendChild(this._optionsList);
+	        this._currentLIHeight = document.getElementsByClassName(LIST_ITEM_CLASS)[0].getBoundingClientRect().height;
+	      }
+	    }
+
+	    /**
+	     * @private
+	     * @param {Object} newItem
+	     */
+
+	  }, {
+	    key: '_addOptionsListItem',
+	    value: function _addOptionsListItem(newItem) {
+	      var optionsListItemHTML = void 0;
+
+	      if (newItem.pic) {
+	        optionsListItemHTML = '<li role="option" class=' + LIST_ITEM_CLASS + ' tabindex="-1"><img src="' + newItem.pic + '"\n                                class="' + LIST_ITEM_PICTURE + '" alt=""><span class="' + LIST_ITEM_TEXT + '"></span></li>';
+	      } else {
+	        optionsListItemHTML = '<li role="option" class=' + LIST_ITEM_CLASS + ' tabindex="-1">\n                                 <span class="' + LIST_ITEM_TEXT + '"></span></li>';
+	      }
+
+	      var newOptionsListItem = _cgComponentUtils2.default.createHTML(optionsListItemHTML);
+
+	      if (newItem.pic) {
+	        newOptionsListItem.childNodes[1].textContent = newItem.value;
+	      } else {
+	        newOptionsListItem.textContent = newItem.value;
+	      }
+	      if (newItem.disabled) {
+	        _cgComponentUtils2.default.addClass(newOptionsListItem, LIST_ITEM_DISABLED_CLASS);
+	      }
+	      this._optionsList.appendChild(newOptionsListItem);
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_addListeners',
+	    value: function _addListeners() {
+	      var _this2 = this;
+
+	      document.addEventListener('click', this._onOutSideClick.bind(this));
+	      window.addEventListener('resize', function () {
+	        _this2._checkConstraints();
+	      });
+	      this._button.addEventListener('click', this._onButtonClick.bind(this));
+	      this._input.addEventListener('input', this._onInputChange.bind(this));
+	      this._input.addEventListener('click', this._onInputClick.bind(this));
+	      this._input.addEventListener('keydown', this._onKeyDown.bind(this));
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_onOutSideClick',
+	    value: function _onOutSideClick(event) {
+	      if (event.target !== this._button && event.target !== this._input && event.target !== this._arrow) {
+	        this.collapse();
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_onButtonClick',
+	    value: function _onButtonClick() {
+	      if (this.settings.disabled) {
+	        return;
+	      }
+	      if (this.expanded) {
+	        this.collapse();
+	      } else {
+	        this.expand();
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_onOptionClick',
+	    value: function _onOptionClick(event) {
+	      this._selectListItem(event.target);
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_selectListItem',
+	    value: function _selectListItem(item) {
+	      this.collapse();
+	      if (item.getAttribute('class').indexOf(LIST_ITEM_DISABLED_CLASS) !== -1) {
+	        return;
+	      }
+	      this.value = item.textContent;
+	      this._placeholder.textContent = this.settings.placeholder;
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_onInputChange',
+	    value: function _onInputChange() {
+	      if (this.settings.disabled) {
+	        return;
+	      }
+	      if (this.settings.filtering) {
+	        this._clearOptionsList();
+	        this._updateOptionsList();
+	      }
+	      if (this._input.value === '') {
+	        this._placeholder.textContent = '';
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_onInputClick',
+	    value: function _onInputClick() {
+	      if (this.settings.disabled) {
+	        return;
+	      }
+	      this.expand();
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_onKeyDown',
+	    value: function _onKeyDown(event) {
+	      if (event.keyCode === _keycode2.default.DOWN) {
+	        this.expand();
+	        this._currentListItemIndex = 0;
+	        this._optionsList.childNodes[this._currentListItemIndex].focus();
+	        _cgComponentUtils2.default.addClass(this._optionsList.childNodes[this._currentListItemIndex], LIST_ITEM_FOCUSED_CLASS);
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_onListItemKeyDown',
+	    value: function _onListItemKeyDown(event) {
+	      var keyCode = event.keyCode;
+
+	      switch (keyCode) {
+	        case _keycode2.default.DOWN:
+	        case _keycode2.default.RIGHT:
+	          this._moveFocusDown();
+	          break;
+	        case _keycode2.default.UP:
+	        case _keycode2.default.LEFT:
+	          this._moveFocusUp();
+	          break;
+	        case _keycode2.default.ENTER:
+	        case _keycode2.default.SPACE:
+	          this._selectListItem(event.target);
+	          break;
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_moveFocusDown',
+	    value: function _moveFocusDown() {
+	      if (this._currentListItemIndex < this._optionsList.childNodes.length - 1) {
+	        this._optionsList.childNodes[++this._currentListItemIndex].focus();
+	      }
+	    }
+
+	    /**
+	     * @private
+	     */
+
+	  }, {
+	    key: '_moveFocusUp',
+	    value: function _moveFocusUp() {
+	      if (this._currentListItemIndex > 0) {
+	        this._optionsList.childNodes[--this._currentListItemIndex].focus();
+	      }
+	    }
+	  }, {
+	    key: '_onListItemFocus',
+	    value: function _onListItemFocus(event) {
+	      _cgComponentUtils2.default.addClass(event.target, LIST_ITEM_FOCUSED_CLASS);
+	    }
+	  }, {
+	    key: '_onListItemBlur',
+	    value: function _onListItemBlur(event) {
+	      _cgComponentUtils2.default.removeClass(event.target, LIST_ITEM_FOCUSED_CLASS);
+	    }
+
+	    /**
+	     * expand Method is available to component's user
+	     * @public
+	     * @param {boolean} emitEvent
+	     * @function
+	     */
+
+	  }, {
+	    key: 'expand',
+	    value: function expand(emitEvent) {
+	      if (!this.expanded) {
+	        this._optionsList.style.display = 'block';
+	        this.expanded = !this.expanded;
+	        _cgComponentUtils2.default.removeClass(this._arrow, ARROW_DOWN_CLASS);
+	        _cgComponentUtils2.default.addClass(this._arrow, ARROW_UP_CLASS);
+	        this._renderOptionsList();
+	        this._currentListItemIndex = 0;
+	        var childNodes = this._optionsList.childNodes;
+
+	        for (var i = 0; i < childNodes.length; i++) {
+	          childNodes[i].addEventListener('keydown', this._onListItemKeyDown.bind(this));
+	          childNodes[i].addEventListener('focus', this._onListItemFocus.bind(this));
+	          childNodes[i].addEventListener('blur', this._onListItemBlur.bind(this));
+	          if (this._currentItemsArray[i]) {
+	            if (this._currentItemsArray[i].disabled === false) {
+	              childNodes[i].addEventListener('click', this._onOptionClick.bind(this));
+	            }
+	          }
+	        }
+	        if (!emitEvent) {
+	          return;
+	        }
+	        this.emit(this.constructor.EVENTS.EXPAND);
+	      }
+	    }
+
+	    /**
+	     * collapse Method is available to component's user
+	     * @public
+	     * @param {boolean} emitEvent
+	     * @function
+	     */
+
+	  }, {
+	    key: 'collapse',
+	    value: function collapse(emitEvent) {
+	      if (this.expanded) {
+	        this._optionsList.style.display = 'none';
+	        this.expanded = !this.expanded;
+	        _cgComponentUtils2.default.removeClass(this._arrow, '' + ARROW_UP_CLASS);
+	        _cgComponentUtils2.default.addClass(this._arrow, '' + ARROW_DOWN_CLASS);
+	      }
+	      if (!emitEvent) {
+	        return;
+	      }
+	      this.emit(this.constructor.EVENTS.COLLAPSE);
+	    }
+
+	    /**
+	     * addOptions is a public method for component's users
+	     * @public
+	     * @param {Array} newOptions
+	     * @function
+	     **/
+
+	  }, {
+	    key: 'addOptions',
+	    value: function addOptions(newOptions) {
+	      var _this3 = this;
+
+	      newOptions.forEach(function (value) {
+	        if (value.disabled === undefined) {
+	          value.disabled = false;
+	        }
+	        _this3.settings.options.push(value);
+	      });
+	    }
+
+	    /**
+	     * deleteOption is a public method for component's users
+	     * @public
+	     * @param {string} optionToDelete
+	     * @function
+	     **/
+
+	  }, {
+	    key: 'deleteOption',
+	    value: function deleteOption(optionToDelete) {
+	      var _this4 = this;
+
+	      this.settings.options.forEach(function (value, index) {
+	        if (value.value === optionToDelete) {
+	          _this4.settings.options.splice(index, 1);
+	        }
+	      });
 	    }
 	  }]);
 
@@ -202,7 +722,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	// module
-	exports.push([module.id, "", ""]);
+	exports.push([module.id, "body {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-align: center;\n      align-items: center;\n  -ms-flex-pack: center;\n      justify-content: center;\n  padding-top: 250px;\n}\n.cg-combobox-root {\n  width: 100%;\n  height: 100%;\n}\n.cg-combobox-input {\n  position: relative;\n  display: inline-block;\n  width: 80%;\n  height: 100%;\n  border: none;\n  outline: none;\n  border-bottom: #17AC5B solid 2px;\n  margin: 0;\n  padding: 0;\n}\n.cg-combobox-input::-ms-clear {\n  display: none;\n}\n.cg-combobox-button {\n  position: relative;\n  display: inline-block;\n  height: 100%;\n  width: 35px;\n  margin-left: -10%;\n  margin-bottom: -6px;\n}\n.cg-combobox-button:hover {\n  cursor: pointer;\n}\n.cg-combobox-list {\n  position: relative;\n  z-index: 20;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  width: 80%;\n  overflow: auto;\n  border: grey solid 1px;\n  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);\n}\n.cg-combobox-list-item {\n  background-color: white;\n  position: relative;\n  display: block;\n  text-align: left;\n  margin: 0;\n  padding: 5% 0;\n  padding-left: 5%;\n}\n.cg-combobox-list-item-disabled {\n  color: rgba(1, 0, 0, 0.3);\n}\n.cg-combobox-list-item:hover {\n  cursor: pointer;\n  background-color: rgba(1, 1, 1, 0.2);\n}\n.cg-combobox-list-item-disabled:hover {\n  cursor: default;\n  background-color: white;\n}\n.cg-combobox-arrow {\n  position: relative;\n  z-index: 40;\n  width: 0;\n  height: 0;\n  border-style: solid;\n  margin-top: 70%;\n}\n.cg-combobox-arrow-up {\n  border-width: 0 10px 10px 10px;\n  border-color: transparent transparent grey transparent;\n}\n.cg-combobox-arrow-down {\n  border-width: 10px 10px 0 10px;\n  border-color: grey transparent transparent transparent;\n}\n.cg-combobox-input:disabled {\n  background-color: transparent;\n}\n.cg-combobox-input-disabled {\n  border-bottom: grey solid 2px;\n}\n.cg-combobox-input-disabled:hover {\n  cursor: default;\n}\n.cg-combobox-text-title {\n  position: absolute;\n  z-index: 30;\n  color: #17AC5B;\n  font-weight: 700;\n  font-size: .9em;\n  margin-top: .1%;\n}\n.cg-combobox-list-item-focused {\n  background-color: rgba(1, 0, 0, 0.1);\n  outline: none;\n}\n.cg-combobox-list-item-picture {\n  width: 10%;\n  margin-right: 3px;\n}\n", ""]);
 
 	// exports
 
@@ -932,6 +1452,327 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return i > -1;
 	    };
 	}
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(module) {/*!
+	 * @name JavaScript/NodeJS Merge v1.2.0
+	 * @author yeikos
+	 * @repository https://github.com/yeikos/js.merge
+
+	 * Copyright 2014 yeikos - MIT license
+	 * https://raw.github.com/yeikos/js.merge/master/LICENSE
+	 */
+
+	;(function(isNode) {
+
+		/**
+		 * Merge one or more objects 
+		 * @param bool? clone
+		 * @param mixed,... arguments
+		 * @return object
+		 */
+
+		var Public = function(clone) {
+
+			return merge(clone === true, false, arguments);
+
+		}, publicName = 'merge';
+
+		/**
+		 * Merge two or more objects recursively 
+		 * @param bool? clone
+		 * @param mixed,... arguments
+		 * @return object
+		 */
+
+		Public.recursive = function(clone) {
+
+			return merge(clone === true, true, arguments);
+
+		};
+
+		/**
+		 * Clone the input removing any reference
+		 * @param mixed input
+		 * @return mixed
+		 */
+
+		Public.clone = function(input) {
+
+			var output = input,
+				type = typeOf(input),
+				index, size;
+
+			if (type === 'array') {
+
+				output = [];
+				size = input.length;
+
+				for (index=0;index<size;++index)
+
+					output[index] = Public.clone(input[index]);
+
+			} else if (type === 'object') {
+
+				output = {};
+
+				for (index in input)
+
+					output[index] = Public.clone(input[index]);
+
+			}
+
+			return output;
+
+		};
+
+		/**
+		 * Merge two objects recursively
+		 * @param mixed input
+		 * @param mixed extend
+		 * @return mixed
+		 */
+
+		function merge_recursive(base, extend) {
+
+			if (typeOf(base) !== 'object')
+
+				return extend;
+
+			for (var key in extend) {
+
+				if (typeOf(base[key]) === 'object' && typeOf(extend[key]) === 'object') {
+
+					base[key] = merge_recursive(base[key], extend[key]);
+
+				} else {
+
+					base[key] = extend[key];
+
+				}
+
+			}
+
+			return base;
+
+		}
+
+		/**
+		 * Merge two or more objects
+		 * @param bool clone
+		 * @param bool recursive
+		 * @param array argv
+		 * @return object
+		 */
+
+		function merge(clone, recursive, argv) {
+
+			var result = argv[0],
+				size = argv.length;
+
+			if (clone || typeOf(result) !== 'object')
+
+				result = {};
+
+			for (var index=0;index<size;++index) {
+
+				var item = argv[index],
+
+					type = typeOf(item);
+
+				if (type !== 'object') continue;
+
+				for (var key in item) {
+
+					var sitem = clone ? Public.clone(item[key]) : item[key];
+
+					if (recursive) {
+
+						result[key] = merge_recursive(result[key], sitem);
+
+					} else {
+
+						result[key] = sitem;
+
+					}
+
+				}
+
+			}
+
+			return result;
+
+		}
+
+		/**
+		 * Get type of variable
+		 * @param mixed input
+		 * @return string
+		 *
+		 * @see http://jsperf.com/typeofvar
+		 */
+
+		function typeOf(input) {
+
+			return ({}).toString.call(input).slice(8, -1).toLowerCase();
+
+		}
+
+		if (isNode) {
+
+			module.exports = Public;
+
+		} else {
+
+			window[publicName] = Public;
+
+		}
+
+	})(typeof module === 'object' && module && typeof module.exports === 'object' && module.exports);
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)(module)))
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
+		}
+		return module;
+	}
+
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	/**
+	 * Created by Praskura on 15.12.2016.
+	 */
+	exports.default = {
+	  BACKSPACE: 8,
+	  TAB: 9,
+	  ENTER: 13,
+	  SHIFT: 16,
+	  CTRL: 17,
+	  ALT: 18,
+	  PAUSE: 19,
+	  CAPSLOCK: 20,
+	  ESCAPE: 27,
+	  SPACE: 32,
+
+	  PAGEUP: 33,
+	  PAGEDOWN: 34,
+	  END: 35,
+	  HOME: 36,
+	  LEFT: 37,
+	  UP: 38,
+	  RIGHT: 39,
+	  DOWN: 40,
+	  INSERT: 45,
+	  DELETE: 46,
+
+	  // numbers
+	  KEY_0: 48,
+	  KEY_1: 49,
+	  KEY_2: 50,
+	  KEY_3: 51,
+	  KEY_4: 52,
+	  KEY_5: 53,
+	  KEY_6: 54,
+	  KEY_7: 55,
+	  KEY_8: 56,
+	  KEY_9: 57,
+
+	  // alphabet
+	  A: 65,
+	  B: 66,
+	  C: 67,
+	  D: 68,
+	  E: 69,
+	  F: 70,
+	  G: 71,
+	  H: 72,
+	  I: 73,
+	  J: 74,
+	  K: 75,
+	  L: 76,
+	  M: 77,
+	  N: 78,
+	  O: 79,
+	  P: 80,
+	  Q: 81,
+	  R: 82,
+	  S: 83,
+	  T: 84,
+	  U: 85,
+	  V: 86,
+	  W: 87,
+	  X: 88,
+	  Y: 89,
+	  Z: 90,
+
+	  SELECT: 93,
+
+	  NUMPAD_0: 96,
+	  NUMPAD_1: 97,
+	  NUMPAD_2: 98,
+	  NUMPAD_3: 99,
+	  NUMPAD_4: 100,
+	  NUMPAD_5: 101,
+	  NUMPAD_6: 102,
+	  NUMPAD_7: 103,
+	  NUMPAD_8: 104,
+	  NUMPAD_9: 105,
+
+	  MULTIPLY: 106,
+	  ADD: 107,
+	  SUBTRACT: 109,
+	  DECIMALPOINT: 110,
+	  DIVIDE: 111,
+
+	  // F1~F2
+	  F1: 112,
+	  F2: 113,
+	  F3: 114,
+	  F4: 115,
+	  F5: 116,
+	  F6: 117,
+	  F7: 118,
+	  F8: 119,
+	  F9: 120,
+	  F10: 121,
+	  F11: 122,
+	  F12: 123,
+
+	  // etc / accents
+	  NUMLOCK: 144,
+	  SCROLLLOCK: 145,
+	  SEMICOLON: 186,
+	  EQUALSIGN: 187,
+	  COMMA: 188,
+	  DASH: 189,
+	  PERIOD: 190,
+	  FORWARDSLASH: 191,
+	  GRAVEACCENT: 192,
+	  OPENBRACKET: 219,
+	  BACKSLASH: 220,
+	  CLOSEBRAKET: 221,
+	  SINGLEQUOTE: 222
+	};
 
 /***/ }
 /******/ ])
