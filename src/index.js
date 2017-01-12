@@ -11,30 +11,32 @@ const PREFIX = 'cg-combobox';
 const ROOT_CLASS = `${PREFIX}-root`;
 const INPUT_CLASS = `${PREFIX}-input`;
 const BUTTON_CLASS = `${PREFIX}-button`;
-const ARROW_CLASS = `${PREFIX}-arrow`;
 const LIST_CLASS = `${PREFIX}-list`;
 const LIST_ITEM_CLASS = `${PREFIX}-list-item`;
 const INPUT_DISABLED_CLASS = `${PREFIX}-input-disabled`;
-const ARROW_UP_CLASS = `${PREFIX}-arrow-up`;
-const ARROW_DOWN_CLASS = `${PREFIX}-arrow-down`;
 const LIST_ITEM_DISABLED_CLASS = `${PREFIX}-list-item-disabled`;
 const TEXT_TITLE_CLASS = `${PREFIX}-text-title`;
 const LIST_ITEM_FOCUSED_CLASS = `${PREFIX}-list-item-focused`;
 const LIST_ITEM_PICTURE = `${PREFIX}-list-item-picture`;
 const LIST_ITEM_TEXT = `${PREFIX}-list-item-text`;
 
-// todo: describe settings properties here
 /**
- * Slider's customizing settings
- * @typedef {Object} TemplateComponentSettings
- * @property {Element|string} container - DOM Element or element id in which slider should be rendered.
- *                                        This property can be omitted. In this case new DOM element will be created and can be accessed via `sliderInstance.container`
+ * ComboBox customizing settings
+ * @typedef {Object} ComboBoxSettings
+ * @property {string} placeholder - a string representing placeholder of the component's input.
+ *                                  It is shown when none of options are selected.
+ * @property {string} title - a string containing value to be read by screen reader.
+ * @property {Array} options - an array containing options of the comboBox that are represented as objects.
+ * @property {boolean} disabled - false if comboBox is available for changing value, true if not.
+ * @property {string} direction - when 'up', comboBox expands upward, when 'bottom', comboBox expands down,
+ *                                when 'auto', comboBox automatically chooses the direction depending on free space.
+ * @property {boolean} inputEnabled - false when input is unavailable for user, true if is available.
+ * @property {boolean} filtering - true if list should filter list content depending on input's content, false if not.
  */
 class CgCombobox extends EventEmitter {
-
   /**
    *
-   * @returns {ComboBoxComponentSettings}
+   * @returns {ComboBoxSettings}
    * @constructor
    */
   static get DEFAULT_SETTINGS() {
@@ -44,10 +46,8 @@ class CgCombobox extends EventEmitter {
         placeholder: 'Title',
         title: 'Combobox',
         options: [],
-        selected: 0,
         disabled: false,
         direction: 'bottom',
-        prompt: null,
         inputEnabled: false,
         filtering: false,
         onExpand: function () {
@@ -159,18 +159,15 @@ class CgCombobox extends EventEmitter {
         <input type="text" class=${INPUT_CLASS} role="combobox" aria-expanded="true"
   aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"
   aria-label='${this.settings.title}' placeholder=${this.settings.placeholder}>
-        <div class=${BUTTON_CLASS}>
-          <div class="${ARROW_CLASS}"></div>
-        </div>
+        <button class=${BUTTON_CLASS}>^</button>
       </div>
     `;
 
     this._rootElement = utils.createHTML(elementHTML);
+
     this._button = this._rootElement.querySelector(`.${BUTTON_CLASS}`);
     this._input = this._rootElement.querySelector(`.${INPUT_CLASS}`);
-    this._arrow = this._rootElement.querySelector(`.${ARROW_CLASS}`);
     this._placeholder = this._rootElement.querySelector(`.${TEXT_TITLE_CLASS}`);
-    utils.addClass(this._arrow, `${ARROW_DOWN_CLASS}`);
     if (this.settings.inputEnabled === false) {
       this._input.setAttribute('disabled', 'disabled');
     }
@@ -312,8 +309,7 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _onOutSideClick(event) {
-    if ((event.target !== this._button) && (event.target !== this._input)
-        && (event.target !== this._arrow)) {
+    if ((event.target !== this._button) && (event.target !== this._input)) {
       this.collapse();
     }
   }
@@ -447,8 +443,6 @@ class CgCombobox extends EventEmitter {
     if (!this.expanded) {
       this._optionsList.style.display = 'block';
       this.expanded = !this.expanded;
-      utils.removeClass(this._arrow, ARROW_DOWN_CLASS);
-      utils.addClass(this._arrow, ARROW_UP_CLASS);
       this._renderOptionsList();
       this._currentListItemIndex = 0;
       let childNodes = this._optionsList.childNodes;
@@ -480,8 +474,6 @@ class CgCombobox extends EventEmitter {
     if (this.expanded) {
       this._optionsList.style.display = 'none';
       this.expanded = !this.expanded;
-      utils.removeClass(this._arrow, `${ARROW_UP_CLASS}`);
-      utils.addClass(this._arrow, `${ARROW_DOWN_CLASS}`);
     }
     if (!emitEvent) {
       return;

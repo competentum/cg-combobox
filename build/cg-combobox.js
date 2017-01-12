@@ -102,24 +102,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ROOT_CLASS = PREFIX + '-root';
 	var INPUT_CLASS = PREFIX + '-input';
 	var BUTTON_CLASS = PREFIX + '-button';
-	var ARROW_CLASS = PREFIX + '-arrow';
 	var LIST_CLASS = PREFIX + '-list';
 	var LIST_ITEM_CLASS = PREFIX + '-list-item';
 	var INPUT_DISABLED_CLASS = PREFIX + '-input-disabled';
-	var ARROW_UP_CLASS = PREFIX + '-arrow-up';
-	var ARROW_DOWN_CLASS = PREFIX + '-arrow-down';
 	var LIST_ITEM_DISABLED_CLASS = PREFIX + '-list-item-disabled';
 	var TEXT_TITLE_CLASS = PREFIX + '-text-title';
 	var LIST_ITEM_FOCUSED_CLASS = PREFIX + '-list-item-focused';
 	var LIST_ITEM_PICTURE = PREFIX + '-list-item-picture';
 	var LIST_ITEM_TEXT = PREFIX + '-list-item-text';
 
-	// todo: describe settings properties here
 	/**
-	 * Slider's customizing settings
-	 * @typedef {Object} TemplateComponentSettings
-	 * @property {Element|string} container - DOM Element or element id in which slider should be rendered.
-	 *                                        This property can be omitted. In this case new DOM element will be created and can be accessed via `sliderInstance.container`
+	 * ComboBox customizing settings
+	 * @typedef {Object} ComboBoxSettings
+	 * @property {string} placeholder - a string representing placeholder of the component's input.
+	 *                                  It is shown when none of options are selected.
+	 * @property {string} title - a string containing value to be read by screen reader.
+	 * @property {Array} options - an array containing options of the comboBox that are represented as objects.
+	 * @property {boolean} disabled - false if comboBox is available for changing value, true if not.
+	 * @property {string} direction - when 'up', comboBox expands upward, when 'bottom', comboBox expands down,
+	 *                                when 'auto', comboBox automatically chooses the direction depending on free space.
+	 * @property {boolean} inputEnabled - false when input is unavailable for user, true if is available.
+	 * @property {boolean} filtering - true if list should filter list content depending on input's content, false if not.
 	 */
 
 	var CgCombobox = function (_EventEmitter) {
@@ -166,10 +169,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }], [{
 	    key: 'DEFAULT_SETTINGS',
 
-
 	    /**
 	     *
-	     * @returns {ComboBoxComponentSettings}
+	     * @returns {ComboBoxSettings}
 	     * @constructor
 	     */
 	    get: function get() {
@@ -179,10 +181,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          placeholder: 'Title',
 	          title: 'Combobox',
 	          options: [],
-	          selected: 0,
 	          disabled: false,
 	          direction: 'bottom',
-	          prompt: null,
 	          inputEnabled: false,
 	          filtering: false,
 	          onExpand: function onExpand() {},
@@ -262,14 +262,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: '_render',
 	    value: function _render() {
-	      var elementHTML = '\n      <div class=' + ROOT_CLASS + '>\n      <div class=' + TEXT_TITLE_CLASS + '></div>\n        <input type="text" class=' + INPUT_CLASS + ' role="combobox" aria-expanded="true"\n  aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"\n  aria-label=\'' + this.settings.title + '\' placeholder=' + this.settings.placeholder + '>\n        <div class=' + BUTTON_CLASS + '>\n          <div class="' + ARROW_CLASS + '"></div>\n        </div>\n      </div>\n    ';
+	      var elementHTML = '\n      <div class=' + ROOT_CLASS + '>\n      <div class=' + TEXT_TITLE_CLASS + '></div>\n        <input type="text" class=' + INPUT_CLASS + ' role="combobox" aria-expanded="true"\n  aria-autocomplete="list" aria-owns="owned_listbox" aria-activedescendant="selected_option" tabindex="1"\n  aria-label=\'' + this.settings.title + '\' placeholder=' + this.settings.placeholder + '>\n        <button class=' + BUTTON_CLASS + '>^</button>\n      </div>\n    ';
 
 	      this._rootElement = _cgComponentUtils2.default.createHTML(elementHTML);
+
 	      this._button = this._rootElement.querySelector('.' + BUTTON_CLASS);
 	      this._input = this._rootElement.querySelector('.' + INPUT_CLASS);
-	      this._arrow = this._rootElement.querySelector('.' + ARROW_CLASS);
 	      this._placeholder = this._rootElement.querySelector('.' + TEXT_TITLE_CLASS);
-	      _cgComponentUtils2.default.addClass(this._arrow, '' + ARROW_DOWN_CLASS);
 	      if (this.settings.inputEnabled === false) {
 	        this._input.setAttribute('disabled', 'disabled');
 	      }
@@ -431,7 +430,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: '_onOutSideClick',
 	    value: function _onOutSideClick(event) {
-	      if (event.target !== this._button && event.target !== this._input && event.target !== this._arrow) {
+	      if (event.target !== this._button && event.target !== this._input) {
 	        this.collapse();
 	      }
 	    }
@@ -597,8 +596,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!this.expanded) {
 	        this._optionsList.style.display = 'block';
 	        this.expanded = !this.expanded;
-	        _cgComponentUtils2.default.removeClass(this._arrow, ARROW_DOWN_CLASS);
-	        _cgComponentUtils2.default.addClass(this._arrow, ARROW_UP_CLASS);
 	        this._renderOptionsList();
 	        this._currentListItemIndex = 0;
 	        var childNodes = this._optionsList.childNodes;
@@ -633,8 +630,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (this.expanded) {
 	        this._optionsList.style.display = 'none';
 	        this.expanded = !this.expanded;
-	        _cgComponentUtils2.default.removeClass(this._arrow, '' + ARROW_UP_CLASS);
-	        _cgComponentUtils2.default.addClass(this._arrow, '' + ARROW_DOWN_CLASS);
 	      }
 	      if (!emitEvent) {
 	        return;
@@ -722,7 +717,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	// module
-	exports.push([module.id, "body {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-align: center;\n      align-items: center;\n  -ms-flex-pack: center;\n      justify-content: center;\n  padding-top: 250px;\n}\n.cg-combobox-root {\n  width: 100%;\n  height: 100%;\n}\n.cg-combobox-input {\n  position: relative;\n  display: inline-block;\n  width: 80%;\n  height: 100%;\n  border: none;\n  outline: none;\n  border-bottom: #17AC5B solid 2px;\n  margin: 0;\n  padding: 0;\n}\n.cg-combobox-input::-ms-clear {\n  display: none;\n}\n.cg-combobox-button {\n  position: relative;\n  display: inline-block;\n  height: 100%;\n  width: 35px;\n  margin-left: -10%;\n  margin-bottom: -6px;\n}\n.cg-combobox-button:hover {\n  cursor: pointer;\n}\n.cg-combobox-list {\n  position: relative;\n  z-index: 20;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  width: 80%;\n  overflow: auto;\n  border: grey solid 1px;\n  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);\n}\n.cg-combobox-list-item {\n  background-color: white;\n  position: relative;\n  display: block;\n  text-align: left;\n  margin: 0;\n  padding: 5% 0;\n  padding-left: 5%;\n}\n.cg-combobox-list-item-disabled {\n  color: rgba(1, 0, 0, 0.3);\n}\n.cg-combobox-list-item:hover {\n  cursor: pointer;\n  background-color: rgba(1, 1, 1, 0.2);\n}\n.cg-combobox-list-item-disabled:hover {\n  cursor: default;\n  background-color: white;\n}\n.cg-combobox-arrow {\n  position: relative;\n  z-index: 40;\n  width: 0;\n  height: 0;\n  border-style: solid;\n  margin-top: 70%;\n}\n.cg-combobox-arrow-up {\n  border-width: 0 10px 10px 10px;\n  border-color: transparent transparent grey transparent;\n}\n.cg-combobox-arrow-down {\n  border-width: 10px 10px 0 10px;\n  border-color: grey transparent transparent transparent;\n}\n.cg-combobox-input:disabled {\n  background-color: transparent;\n}\n.cg-combobox-input-disabled {\n  border-bottom: grey solid 2px;\n}\n.cg-combobox-input-disabled:hover {\n  cursor: default;\n}\n.cg-combobox-text-title {\n  position: absolute;\n  z-index: 30;\n  color: #17AC5B;\n  font-weight: 700;\n  font-size: .9em;\n  margin-top: .1%;\n}\n.cg-combobox-list-item-focused {\n  background-color: rgba(1, 0, 0, 0.1);\n  outline: none;\n}\n.cg-combobox-list-item-picture {\n  width: 10%;\n  margin-right: 3px;\n}\n", ""]);
+	exports.push([module.id, ".cg-combobox-root {\n  width: 100%;\n  height: 100%;\n  min-width: 300px;\n}\n.cg-combobox-input {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border: none;\n  outline: none;\n  border-bottom: #17AC5B solid 2px;\n  margin: 0;\n  padding-right: 35px;\n}\n.cg-combobox-input::-ms-clear {\n  display: none;\n}\n.cg-combobox-button {\n  display: block;\n  float: right;\n  clear: both;\n  width: 35px;\n  background-color: transparent;\n  border: none;\n  margin-right: -35px;\n  margin-top: -20px;\n}\n.cg-combobox-button:active {\n  border: none;\n}\n.cg-combobox-button:hover {\n  cursor: pointer;\n}\n.cg-combobox-list {\n  position: relative;\n  z-index: 20;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  overflow: auto;\n  border: grey solid 1px;\n  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);\n}\n.cg-combobox-list-item {\n  background-color: white;\n  position: relative;\n  display: block;\n  text-align: left;\n  margin: 0;\n  padding: 5% 0;\n  padding-left: 5%;\n}\n.cg-combobox-list-item-disabled {\n  color: rgba(1, 0, 0, 0.3);\n}\n.cg-combobox-list-item:hover {\n  cursor: pointer;\n  background-color: rgba(1, 1, 1, 0.2);\n}\n.cg-combobox-list-item-disabled:hover {\n  cursor: default;\n  background-color: white;\n}\n.cg-combobox-arrow {\n  position: relative;\n  z-index: 40;\n  width: 0;\n  height: 0;\n  border-style: solid;\n  margin-top: 70%;\n}\n.cg-combobox-arrow-up {\n  border-width: 0 10px 10px 10px;\n  border-color: transparent transparent grey transparent;\n}\n.cg-combobox-arrow-down {\n  border-width: 10px 10px 0 10px;\n  border-color: grey transparent transparent transparent;\n}\n.cg-combobox-input:disabled {\n  background-color: transparent;\n}\n.cg-combobox-input-disabled {\n  border-bottom: grey solid 2px;\n}\n.cg-combobox-input-disabled:hover {\n  cursor: default;\n}\n.cg-combobox-text-title {\n  position: absolute;\n  z-index: 30;\n  color: #17AC5B;\n  font-weight: 700;\n  font-size: .9em;\n  margin-top: .1%;\n}\n.cg-combobox-list-item-focused {\n  background-color: rgba(1, 0, 0, 0.1);\n  outline: none;\n}\n.cg-combobox-list-item-picture {\n  width: 10%;\n  margin-right: 3px;\n}\n", ""]);
 
 	// exports
 
