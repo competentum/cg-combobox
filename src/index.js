@@ -19,6 +19,8 @@ const TEXT_TITLE_CLASS = `${PREFIX}-text-title`;
 const LIST_ITEM_FOCUSED_CLASS = `${PREFIX}-list-item-focused`;
 const LIST_ITEM_PICTURE = `${PREFIX}-list-item-picture`;
 const LIST_ITEM_TEXT = `${PREFIX}-list-item-text`;
+const DIRECTION_AUTO = `${PREFIX}-auto`;
+const DIRECTION_UP = `${PREFIX}-up`;
 
 /**
  * ComboBox customizing settings
@@ -195,34 +197,16 @@ class CgCombobox extends EventEmitter {
    * @private
    */
   _checkConstraints() {
+    let list = this._rootElement.querySelector(`.${LIST_CLASS}`);
     let offsetTop = this._rootElement.offsetTop;
     let currentMargin = (this._currentLIHeight + 1) * this.settings.options.length;
+    let offsetBottom = window.innerHeight - offsetTop - this._currentLIHeight;
 
-    if (((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) && offsetTop < currentMargin) {
-      if (this.settings.direction === 'up') {
-        this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
-      }
-      else if (this.settings.direction === 'bottom') {
-        this._optionsList.style.marginTop = '0px';
-      }
-      return;
+    if (offsetBottom < currentMargin) {
+      if (list)
+        list.setAttribute('direction', DIRECTION_UP);
     }
-    /*if (this.settings.direction === 'up') {
-      if (offsetTop < currentMargin) {
-        this._optionsList.style.marginTop = '0px';
-      }
-      else {
-        this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
-      }
-    }
-    else if (this.settings.direction === 'bottom') {
-      if ((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) {
-        this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
-      }
-      else {
-        this._optionsList.style.marginTop = '0px';
-      }
-    }*/
+
   }
 
   /**
@@ -233,7 +217,9 @@ class CgCombobox extends EventEmitter {
 
     this._optionsList = utils.createHTML(optionsListHTML);
     this._updateOptionsList();
-    this._checkConstraints();
+    if (PREFIX+'-'+this.settings.direction === DIRECTION_AUTO) {
+      this._checkConstraints();
+    }
   }
 
   /**

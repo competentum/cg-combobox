@@ -110,6 +110,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var LIST_ITEM_FOCUSED_CLASS = PREFIX + '-list-item-focused';
 	var LIST_ITEM_PICTURE = PREFIX + '-list-item-picture';
 	var LIST_ITEM_TEXT = PREFIX + '-list-item-text';
+	var DIRECTION_AUTO = PREFIX + '-auto';
+	var DIRECTION_UP = PREFIX + '-up';
 
 	/**
 	 * ComboBox customizing settings
@@ -302,33 +304,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: '_checkConstraints',
 	    value: function _checkConstraints() {
+	      var list = this._rootElement.querySelector('.' + LIST_CLASS);
 	      var offsetTop = this._rootElement.offsetTop;
 	      var currentMargin = (this._currentLIHeight + 1) * this.settings.options.length;
+	      var offsetBottom = window.innerHeight - offsetTop - this._currentLIHeight;
 
-	      if (window.innerHeight - offsetTop - this._currentLIHeight < currentMargin && offsetTop < currentMargin) {
-	        if (this.settings.direction === 'up') {
-	          this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
-	        } else if (this.settings.direction === 'bottom') {
-	          this._optionsList.style.marginTop = '0px';
-	        }
-	        return;
+	      if (offsetBottom < currentMargin) {
+	        if (list) list.setAttribute('direction', DIRECTION_UP);
 	      }
-	      /*if (this.settings.direction === 'up') {
-	        if (offsetTop < currentMargin) {
-	          this._optionsList.style.marginTop = '0px';
-	        }
-	        else {
-	          this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
-	        }
-	      }
-	      else if (this.settings.direction === 'bottom') {
-	        if ((window.innerHeight - offsetTop - this._currentLIHeight) < currentMargin) {
-	          this._optionsList.style.marginTop = '-' + (currentMargin + this._currentLIHeight) + 'px';
-	        }
-	        else {
-	          this._optionsList.style.marginTop = '0px';
-	        }
-	      }*/
 	    }
 
 	    /**
@@ -342,7 +325,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      this._optionsList = _cgComponentUtils2.default.createHTML(optionsListHTML);
 	      this._updateOptionsList();
-	      this._checkConstraints();
+	      if (PREFIX + '-' + this.settings.direction === DIRECTION_AUTO) {
+	        this._checkConstraints();
+	      }
 	    }
 
 	    /**
@@ -717,7 +702,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	// module
-	exports.push([module.id, ".cg-combobox-root {\n  width: 100%;\n  height: 100%;\n  min-width: 300px;\n}\n.cg-combobox-input {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border: none;\n  outline: none;\n  border-bottom: #17AC5B solid 2px;\n  margin: 0;\n  padding-right: 35px;\n}\n.cg-combobox-input::-ms-clear {\n  display: none;\n}\n.cg-combobox-button {\n  display: block;\n  float: right;\n  clear: both;\n  width: 35px;\n  background-color: transparent;\n  border: none;\n  margin-right: -35px;\n  margin-top: -20px;\n}\n.cg-combobox-button:active {\n  border: none;\n}\n.cg-combobox-button:hover {\n  cursor: pointer;\n}\n.cg-combobox-list {\n  position: relative;\n  z-index: 20;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  overflow: auto;\n  border: grey solid 1px;\n  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);\n}\n.cg-combobox-list-item {\n  background-color: white;\n  position: relative;\n  display: block;\n  text-align: left;\n  margin: 0;\n  padding: 5% 0;\n  padding-left: 5%;\n}\n.cg-combobox-list-item-disabled {\n  color: rgba(1, 0, 0, 0.3);\n}\n.cg-combobox-list-item:hover {\n  cursor: pointer;\n  background-color: rgba(1, 1, 1, 0.2);\n}\n.cg-combobox-list-item-disabled:hover {\n  cursor: default;\n  background-color: white;\n}\n.cg-combobox-arrow {\n  position: relative;\n  z-index: 40;\n  width: 0;\n  height: 0;\n  border-style: solid;\n  margin-top: 70%;\n}\n.cg-combobox-arrow-up {\n  border-width: 0 10px 10px 10px;\n  border-color: transparent transparent grey transparent;\n}\n.cg-combobox-arrow-down {\n  border-width: 10px 10px 0 10px;\n  border-color: grey transparent transparent transparent;\n}\n.cg-combobox-input:disabled {\n  background-color: transparent;\n}\n.cg-combobox-input-disabled {\n  border-bottom: grey solid 2px;\n}\n.cg-combobox-input-disabled:hover {\n  cursor: default;\n}\n.cg-combobox-text-title {\n  position: absolute;\n  z-index: 30;\n  color: #17AC5B;\n  font-weight: 700;\n  font-size: .9em;\n  margin-top: .1%;\n}\n.cg-combobox-list-item-focused {\n  background-color: rgba(1, 0, 0, 0.1);\n  outline: none;\n}\n.cg-combobox-list-item-picture {\n  width: 10%;\n  margin-right: 3px;\n}\n", ""]);
+	exports.push([module.id, ".cg-combobox-root {\n  width: 100%;\n  height: 100%;\n  min-width: 100px;\n  position: relative;\n}\n.cg-combobox-input {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border: none;\n  outline: none;\n  border-bottom: #17AC5B solid 2px;\n  margin: 0;\n  padding-right: 35px;\n}\n.cg-combobox-input::-ms-clear {\n  display: none;\n}\n.cg-combobox-button {\n  display: block;\n  float: right;\n  clear: both;\n  width: 35px;\n  height: 100%;\n  background-color: transparent;\n  border: none;\n  margin-right: -35px;\n  margin-top: -40px;\n}\n.cg-combobox-button:active {\n  border: none;\n}\n.cg-combobox-button:hover {\n  cursor: pointer;\n}\n.cg-combobox-list {\n  position: absolute;\n  z-index: 20;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  overflow: auto;\n  border: grey solid 1px;\n  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);\n}\n.cg-combobox-list[direction='cg-combobox-up'] {\n  bottom: 100%;\n}\n.cg-combobox-list[direction='cg-combobox-bottom'] {\n  top: 100%;\n}\n.cg-combobox-list-item {\n  background-color: white;\n  position: relative;\n  display: block;\n  text-align: left;\n  margin: 0;\n  padding: 5% 0;\n  padding-left: 5%;\n}\n.cg-combobox-list-item-disabled {\n  color: rgba(1, 0, 0, 0.3);\n}\n.cg-combobox-list-item:hover {\n  cursor: pointer;\n  background-color: rgba(1, 1, 1, 0.2);\n}\n.cg-combobox-list-item-disabled:hover {\n  cursor: default;\n  background-color: white;\n}\n.cg-combobox-arrow {\n  position: relative;\n  z-index: 40;\n  width: 0;\n  height: 0;\n  border-style: solid;\n  margin-top: 70%;\n}\n.cg-combobox-arrow-up {\n  border-width: 0 10px 10px 10px;\n  border-color: transparent transparent grey transparent;\n}\n.cg-combobox-arrow-down {\n  border-width: 10px 10px 0 10px;\n  border-color: grey transparent transparent transparent;\n}\n.cg-combobox-input:disabled {\n  background-color: transparent;\n}\n.cg-combobox-input-disabled {\n  border-bottom: grey solid 2px;\n}\n.cg-combobox-input-disabled:hover {\n  cursor: default;\n}\n.cg-combobox-text-title {\n  position: absolute;\n  z-index: 30;\n  color: #17AC5B;\n  font-weight: 700;\n  font-size: .9em;\n  margin-top: .1%;\n}\n.cg-combobox-list-item-focused {\n  background-color: rgba(1, 0, 0, 0.1);\n  outline: none;\n}\n.cg-combobox-list-item-picture {\n  width: 10%;\n  margin-right: 3px;\n}\n", ""]);
 
 	// exports
 
