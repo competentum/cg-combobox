@@ -6,6 +6,7 @@ import EventEmitter from 'events';
 import utils from 'cg-component-utils';
 import merge from 'merge';
 import keycode from './keycode';
+import Option from './option';
 
 const PREFIX = 'cg-combobox';
 const ROOT_CLASS = `${PREFIX}-root`;
@@ -17,8 +18,6 @@ const INPUT_DISABLED_CLASS = `${PREFIX}-input-disabled`;
 const LIST_ITEM_DISABLED_CLASS = `${PREFIX}-list-item-disabled`;
 const TEXT_TITLE_CLASS = `${PREFIX}-text-title`;
 const LIST_ITEM_FOCUSED_CLASS = `${PREFIX}-list-item-focused`;
-const LIST_ITEM_PICTURE = `${PREFIX}-list-item-picture`;
-const LIST_ITEM_TEXT = `${PREFIX}-list-item-text`;
 const DIRECTION_AUTO = `${PREFIX}-auto`;
 const DIRECTION_UP = `${PREFIX}-up`;
 
@@ -39,7 +38,6 @@ class CgCombobox extends EventEmitter {
   /**
    *
    * @returns {ComboBoxSettings}
-   * @constructor
    */
   static get DEFAULT_SETTINGS() {
     if (!this._DEFAULT_SETTINGS) {
@@ -251,32 +249,11 @@ class CgCombobox extends EventEmitter {
 
   /**
    * @private
-   * @param {Object} newItem
+   * @param {string} newItemVal
    */
-  _addOptionsListItem(newItem) {
-    let optionsListItemHTML;
-
-    if (newItem.pic) {
-      optionsListItemHTML = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1"><img src="${newItem.pic}"
-                                class="${LIST_ITEM_PICTURE}" alt=""><span class="${LIST_ITEM_TEXT}"></span></li>`;
-    }
-    else {
-      optionsListItemHTML = `<li role="option" class=${LIST_ITEM_CLASS} tabindex="-1">
-                                 <span class="${LIST_ITEM_TEXT}"></span></li>`;
-    }
-
-    let newOptionsListItem = utils.createHTML(optionsListItemHTML);
-
-    if (newItem.pic) {
-      newOptionsListItem.childNodes[1].textContent = newItem.value;
-    }
-    else {
-      newOptionsListItem.textContent = newItem.value;
-    }
-    if (newItem.disabled) {
-      utils.addClass(newOptionsListItem, LIST_ITEM_DISABLED_CLASS);
-    }
-    this._optionsList.appendChild(newOptionsListItem);
+  _addOptionsListItem(newItemVal) {
+    let newItem = new Option(this._optionsList, newItemVal.value);
+    newItem.render();
   }
 
   /**

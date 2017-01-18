@@ -90,6 +90,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _keycode2 = _interopRequireDefault(_keycode);
 
+	var _option = __webpack_require__(12);
+
+	var _option2 = _interopRequireDefault(_option);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -108,8 +112,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var LIST_ITEM_DISABLED_CLASS = PREFIX + '-list-item-disabled';
 	var TEXT_TITLE_CLASS = PREFIX + '-text-title';
 	var LIST_ITEM_FOCUSED_CLASS = PREFIX + '-list-item-focused';
-	var LIST_ITEM_PICTURE = PREFIX + '-list-item-picture';
-	var LIST_ITEM_TEXT = PREFIX + '-list-item-text';
 	var DIRECTION_AUTO = PREFIX + '-auto';
 	var DIRECTION_UP = PREFIX + '-up';
 
@@ -174,7 +176,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	     *
 	     * @returns {ComboBoxSettings}
-	     * @constructor
 	     */
 	    get: function get() {
 	      if (!this._DEFAULT_SETTINGS) {
@@ -362,31 +363,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    /**
 	     * @private
-	     * @param {Object} newItem
+	     * @param {string} newItemVal
 	     */
 
 	  }, {
 	    key: '_addOptionsListItem',
-	    value: function _addOptionsListItem(newItem) {
-	      var optionsListItemHTML = void 0;
-
-	      if (newItem.pic) {
-	        optionsListItemHTML = '<li role="option" class=' + LIST_ITEM_CLASS + ' tabindex="-1"><img src="' + newItem.pic + '"\n                                class="' + LIST_ITEM_PICTURE + '" alt=""><span class="' + LIST_ITEM_TEXT + '"></span></li>';
-	      } else {
-	        optionsListItemHTML = '<li role="option" class=' + LIST_ITEM_CLASS + ' tabindex="-1">\n                                 <span class="' + LIST_ITEM_TEXT + '"></span></li>';
-	      }
-
-	      var newOptionsListItem = _cgComponentUtils2.default.createHTML(optionsListItemHTML);
-
-	      if (newItem.pic) {
-	        newOptionsListItem.childNodes[1].textContent = newItem.value;
-	      } else {
-	        newOptionsListItem.textContent = newItem.value;
-	      }
-	      if (newItem.disabled) {
-	        _cgComponentUtils2.default.addClass(newOptionsListItem, LIST_ITEM_DISABLED_CLASS);
-	      }
-	      this._optionsList.appendChild(newOptionsListItem);
+	    value: function _addOptionsListItem(newItemVal) {
+	      var newItem = new _option2.default(this._optionsList, newItemVal.value);
+	      newItem.render();
 	    }
 
 	    /**
@@ -702,7 +686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	// module
-	exports.push([module.id, ".cg-combobox-root {\n  width: 100%;\n  height: 100%;\n  min-width: 100px;\n  position: relative;\n}\n.cg-combobox-input {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border: none;\n  outline: none;\n  border-bottom: #17AC5B solid 2px;\n  margin: 0;\n  padding-right: 35px;\n}\n.cg-combobox-input::-ms-clear {\n  display: none;\n}\n.cg-combobox-button {\n  display: block;\n  float: right;\n  clear: both;\n  width: 35px;\n  height: 100%;\n  background-color: transparent;\n  border: none;\n  margin-right: -35px;\n  margin-top: -40px;\n}\n.cg-combobox-button:active {\n  border: none;\n}\n.cg-combobox-button:hover {\n  cursor: pointer;\n}\n.cg-combobox-list {\n  position: absolute;\n  z-index: 20;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  overflow: auto;\n  border: grey solid 1px;\n  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);\n}\n.cg-combobox-list[direction='cg-combobox-up'] {\n  bottom: 100%;\n}\n.cg-combobox-list[direction='cg-combobox-bottom'] {\n  top: 100%;\n}\n.cg-combobox-list-item {\n  background-color: white;\n  position: relative;\n  display: block;\n  text-align: left;\n  margin: 0;\n  padding: 5% 0;\n  padding-left: 5%;\n}\n.cg-combobox-list-item-disabled {\n  color: rgba(1, 0, 0, 0.3);\n}\n.cg-combobox-list-item:hover {\n  cursor: pointer;\n  background-color: rgba(1, 1, 1, 0.2);\n}\n.cg-combobox-list-item-disabled:hover {\n  cursor: default;\n  background-color: white;\n}\n.cg-combobox-arrow {\n  position: relative;\n  z-index: 40;\n  width: 0;\n  height: 0;\n  border-style: solid;\n  margin-top: 70%;\n}\n.cg-combobox-arrow-up {\n  border-width: 0 10px 10px 10px;\n  border-color: transparent transparent grey transparent;\n}\n.cg-combobox-arrow-down {\n  border-width: 10px 10px 0 10px;\n  border-color: grey transparent transparent transparent;\n}\n.cg-combobox-input:disabled {\n  background-color: transparent;\n}\n.cg-combobox-input-disabled {\n  border-bottom: grey solid 2px;\n}\n.cg-combobox-input-disabled:hover {\n  cursor: default;\n}\n.cg-combobox-text-title {\n  position: absolute;\n  z-index: 30;\n  color: #17AC5B;\n  font-weight: 700;\n  font-size: .9em;\n  margin-top: .1%;\n}\n.cg-combobox-list-item-focused {\n  background-color: rgba(1, 0, 0, 0.1);\n  outline: none;\n}\n.cg-combobox-list-item-picture {\n  width: 10%;\n  margin-right: 3px;\n}\n", ""]);
+	exports.push([module.id, ".cg-combobox-root {\n  width: 100%;\n  height: 100%;\n  min-width: 100px;\n  position: relative;\n}\n.cg-combobox-input {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border: none;\n  outline: none;\n  border-bottom: #17AC5B solid 2px;\n  margin: 0;\n  padding-right: 35px;\n}\n.cg-combobox-input::-ms-clear {\n  display: none;\n}\n.cg-combobox-button {\n  display: block;\n  float: right;\n  clear: both;\n  width: 35px;\n  height: 100%;\n  background-color: transparent;\n  border: none;\n  margin-right: -35px;\n  margin-top: -40px;\n}\n.cg-combobox-button:active {\n  border: none;\n}\n.cg-combobox-button:hover {\n  cursor: pointer;\n}\n.cg-combobox-list {\n  z-index: 20;\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  overflow: auto;\n  border: grey solid 1px;\n  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);\n}\n.cg-combobox-list[direction='cg-combobox-up'] {\n  bottom: 100%;\n}\n.cg-combobox-list[direction='cg-combobox-bottom'] {\n  top: 100%;\n}\n.cg-combobox-list-item {\n  background-color: white;\n  position: relative;\n  display: block;\n  text-align: left;\n  margin: 0;\n  padding: 5% 0;\n  padding-left: 5%;\n}\n.cg-combobox-list-item-disabled {\n  color: rgba(1, 0, 0, 0.3);\n}\n.cg-combobox-list-item:hover {\n  cursor: pointer;\n  background-color: rgba(1, 1, 1, 0.2);\n}\n.cg-combobox-list-item-disabled:hover {\n  cursor: default;\n  background-color: white;\n}\n.cg-combobox-arrow {\n  position: relative;\n  z-index: 40;\n  width: 0;\n  height: 0;\n  border-style: solid;\n  margin-top: 70%;\n}\n.cg-combobox-arrow-up {\n  border-width: 0 10px 10px 10px;\n  border-color: transparent transparent grey transparent;\n}\n.cg-combobox-arrow-down {\n  border-width: 10px 10px 0 10px;\n  border-color: grey transparent transparent transparent;\n}\n.cg-combobox-input:disabled {\n  background-color: transparent;\n}\n.cg-combobox-input-disabled {\n  border-bottom: grey solid 2px;\n}\n.cg-combobox-input-disabled:hover {\n  cursor: default;\n}\n.cg-combobox-text-title {\n  position: absolute;\n  z-index: 30;\n  color: #17AC5B;\n  font-weight: 700;\n  font-size: .9em;\n  margin-top: .1%;\n}\n.cg-combobox-list-item-focused {\n  background-color: rgba(1, 0, 0, 0.1);\n  outline: none;\n}\n.cg-combobox-list-item-picture {\n  width: 10%;\n  margin-right: 3px;\n}\n", ""]);
 
 	// exports
 
@@ -1753,6 +1737,90 @@ return /******/ (function(modules) { // webpackBootstrap
 	  CLOSEBRAKET: 221,
 	  SINGLEQUOTE: 222
 	};
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by Praskura on 12.01.2017.
+	 */
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _cgComponentUtils = __webpack_require__(7);
+
+	var _cgComponentUtils2 = _interopRequireDefault(_cgComponentUtils);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var PREFIX = 'cg-combobox';
+	var LIST_ITEM_CLASS = PREFIX + '-list-item';
+	var LIST_ITEM_PICTURE = PREFIX + '-list-item-picture';
+	var LIST_ITEM_TEXT = PREFIX + '-list-item-text';
+
+	var ComboBoxOption = function () {
+	  function ComboBoxOption(parentElement, value, pic) {
+	    _classCallCheck(this, ComboBoxOption);
+
+	    this._value = value;
+	    this._disabled = false;
+	    this._pic = pic;
+	    this._parentElement = parentElement;
+
+	    this.addListeners();
+	  }
+
+	  _createClass(ComboBoxOption, [{
+	    key: 'render',
+	    value: function render() {
+	      var optionHTML = '';
+	      if (this._pic) {
+	        optionHTML = '<li role="option" class=' + LIST_ITEM_CLASS + ' tabindex="-1"><img src="' + this._pic + '"\n                                class="' + LIST_ITEM_PICTURE + '" alt=""><span class="' + LIST_ITEM_TEXT + '">' + this._value + '</span></li>';
+	      } else {
+	        optionHTML = '<li role="option" class=' + LIST_ITEM_CLASS + ' tabindex="-1">\n                                 <span class="' + LIST_ITEM_TEXT + '">' + this._value + '</span></li>';
+	      }
+
+	      this._elem = _cgComponentUtils2.default.createHTML(optionHTML);
+
+	      this._parentElement.appendChild(this._elem);
+	    }
+	  }, {
+	    key: 'addListeners',
+	    value: function addListeners() {}
+	  }, {
+	    key: 'value',
+	    get: function get() {
+	      return this._value;
+	    },
+	    set: function set(value) {
+	      this._value = value;
+	    }
+	  }, {
+	    key: 'disabled',
+	    get: function get() {
+	      return this._disabled;
+	    },
+	    set: function set(value) {
+	      this._disabled = value;
+	    }
+	  }, {
+	    key: 'pic',
+	    get: function get() {
+	      return this._pic;
+	    },
+	    set: function set(srcPath) {
+	      this._pic = srcPath;
+	    }
+	  }]);
+
+	  return ComboBoxOption;
+	}();
+
+	module.exports = ComboBoxOption;
 
 /***/ }
 /******/ ])
